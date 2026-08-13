@@ -2990,9 +2990,13 @@
         row[17] = hasPromo ? cleanPromoDate(akhirPromo) : ''; // 18: AKHIR PROMO (DD/MM/YYYY)
         row[18] = ''; // 19: AKTIF PROMO (Murni BLANK "" agar tidak merusak rumus/format sheet)
 
-        row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN
-        row[20] = expDateTerdekat; // 21: EXP DATE TERDEKAT
-        row[21] = qtyExpTerdekat; // 22: QTY EXP TERDEKAT
+        const isExpAda = (exp1BulanStatus === 'ADA');
+        const cleanExpDate = isExpAda ? cleanPromoDate(expDateTerdekat) : '';
+        const cleanQtyExp = (isExpAda && qtyExpTerdekat && parseFloat(qtyExpTerdekat) > 0) ? String(qtyExpTerdekat) : '';
+
+        row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN (ADA / TIDAK ADA)
+        row[20] = cleanExpDate; // 21: EXP DATE TERDEKAT (Murni BLANK "" jika TIDAK ADA)
+        row[21] = cleanQtyExp; // 22: QTY EXP TERDEKAT (Murni BLANK "" jika TIDAK ADA atau 0)
 
         row[22] = expDisplayStatus; // 23: EXPIRED TERDISPLAY
         row[23] = expDisplayStatus === 'ADA' ? getVal('field_EXP_DATE_DISPLAY') : ''; // 24
