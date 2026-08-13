@@ -347,10 +347,22 @@
                 <option value="4 FOTO BEFORE - AFTER">4 Foto Before - After</option>
                 <option value="5 FOTO BEFORE - AFTER">5 Foto Before - After</option>
                 <option value="6 FOTO BEFORE - AFTER">6 Foto Before - After</option>
+                <option value="DILARANG FOTO" class="text-red-600 font-bold">🚫 Dilarang Foto</option>
               </select>
             </div>
 
-            <div class="pt-2.5 border-t border-slate-200 space-y-3">
+            <!-- BANNER: Dilarang Foto (hidden by default) -->
+            <div id="bannerDilarangFoto" class="hidden items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-3.5">
+              <div class="shrink-0 w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <i data-lucide="camera-off" class="w-5 h-5 text-red-600"></i>
+              </div>
+              <div>
+                <p class="font-bold text-red-700 text-xs">Toko Ini Melarang Pengambilan Foto Display</p>
+                <p class="text-red-500 text-[11px] mt-0.5">Seluruh slot foto pajangan di-skip. Kolom FOTO PAJANGAN akan terisi <span class="font-mono font-bold">DILARANG FOTO</span>.</p>
+              </div>
+            </div>
+
+            <div id="wrapperBeforeAfterSlots" class="pt-2.5 border-t border-slate-200 space-y-3">
               <p class="text-slate-700 font-bold">Slot Foto Before (1 - 6):</p>
               <div id="beforeSlotsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 <!-- Rendered via JS -->
@@ -2381,8 +2393,7 @@
 
       // Before After Selection
       document.getElementById('field_FOTO_PAJANGAN_OPTION').addEventListener('change', (e) => {
-        const count = parseInt(e.target.value.charAt(0)) || 3;
-        updateBeforeAfterVisibility(count);
+        handleFotoPajanganChange(e.target.value);
       });
 
       // Rak Reguler Toggle
@@ -2526,7 +2537,41 @@
         `;
         afterGrid.appendChild(aDiv);
       }
-      updateBeforeAfterVisibility(3);
+      handleFotoPajanganChange('3 FOTO BEFORE - AFTER'); // default: 3 foto
+    }
+
+    function handleFotoPajanganChange(value) {
+      const isDilarang = value === 'DILARANG FOTO';
+      const banner = document.getElementById('bannerDilarangFoto');
+      const wrapper = document.getElementById('wrapperBeforeAfterSlots');
+      const select = document.getElementById('field_FOTO_PAJANGAN_OPTION');
+
+      if (isDilarang) {
+        // Tampil banner, sembunyikan semua slot
+        banner.classList.remove('hidden');
+        banner.classList.add('flex');
+        wrapper.classList.add('hidden');
+        select.classList.add('text-red-600');
+        // Clear semua hidden field foto before/after agar tidak ada Base64 yang terkirim
+        for (let i = 1; i <= 6; i++) {
+          const bField = document.getElementById(`field_FOTO_BEFORE_${i}`);
+          const aField = document.getElementById(`field_FOTO_AFTER_${i}`);
+          const bPrev = document.getElementById(`preview_FOTO_BEFORE_${i}`);
+          const aPrev = document.getElementById(`preview_FOTO_AFTER_${i}`);
+          if (bField) bField.value = '';
+          if (aField) aField.value = '';
+          if (bPrev) bPrev.classList.add('hidden');
+          if (aPrev) aPrev.classList.add('hidden');
+        }
+      } else {
+        // Normal: sembunyikan banner, tampil slot sesuai jumlah
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+        wrapper.classList.remove('hidden');
+        select.classList.remove('text-red-600');
+        const count = parseInt(value.charAt(0)) || 3;
+        updateBeforeAfterVisibility(count);
+      }
     }
 
     function updateBeforeAfterVisibility(activeCount) {
