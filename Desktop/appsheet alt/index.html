@@ -2033,15 +2033,31 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO FROM GAS (JSONP - bypass CORS tanpa perlu redeploy GAS)
-    function fetchMasterTokoFromGas(gasUrl) {
+    // HELPER FETCH MASTER TOKO FROM GAS (POST METHOD FIRST, JSONP FALLBACK SECOND)
+    async function fetchMasterTokoFromGas(gasUrl) {
+      const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
+
+      // Method 1: Try HTTP POST (No CORS Redirect)
+      try {
+        const resPost = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getMasterToko', region: currentRegion })
+        });
+        if (resPost.ok) {
+          const json = await resPost.json();
+          if (json.status === 'success' && Array.isArray(json.data)) return json.data;
+        }
+      } catch (e) {}
+
+      // Method 2: Fallback to JSONP Script Tag Injection
       return new Promise((resolve) => {
-        const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
         const callbackName = 'gasCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        let script;
         const timeout = setTimeout(() => {
           cleanup();
           resolve(null);
-        }, 10000); // timeout 10 detik
+        }, 10000);
 
         function cleanup() {
           clearTimeout(timeout);
@@ -2059,7 +2075,7 @@
         };
 
         const url = `${gasUrl}?action=getMasterToko&region=${encodeURIComponent(currentRegion)}&callback=${callbackName}`;
-        const script = document.createElement('script');
+        script = document.createElement('script');
         script.src = url;
         script.onerror = () => { cleanup(); resolve(null); };
         document.head.appendChild(script);
