@@ -75,10 +75,10 @@
   </header>
 
   <!-- MAIN FORM CONTAINER -->
-  <main class="flex-1 max-w-2xl w-full mx-auto p-3.5 sm:p-4 pb-28 space-y-4">
+  <main class="flex-1 max-w-2xl w-full mx-auto p-3.5 sm:p-4 space-y-4">
 
     <!-- VIEW 1: DASHBOARD RUTE TOKO (INDEPENDENT CARD SCROLL VIEW) -->
-    <div id="viewStoreList" class="flex flex-col h-[calc(100vh-80px)] space-y-3 overflow-hidden">
+    <div id="viewStoreList" class="flex flex-col space-y-3">
       
       <!-- CREW SUMMARY & ROUTE HEADER BANNER (FIXED TOP) -->
       <div class="shrink-0 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg shadow-blue-600/20 space-y-3">
@@ -126,8 +126,8 @@
         <span id="dashRouteInfo" class="text-xs font-semibold text-slate-500">Rute Tgl --</span>
       </div>
 
-      <!-- STORE CARDS CONTAINER (INDEPENDENTLY SCROLLABLE WITHOUT SCROLLBAR) -->
-      <div id="storeCardsContainer" class="flex-1 overflow-y-auto hide-scrollbar pr-1 pb-16 space-y-3">
+      <!-- STORE CARDS CONTAINER -->
+      <div id="storeCardsContainer" class="space-y-3 pb-8">
         <!-- Rendered via JS -->
       </div>
     </div>
