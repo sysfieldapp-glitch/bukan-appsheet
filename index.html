@@ -2061,38 +2061,31 @@
       return null;
     }
 
-    // AUTO SYNC MASTER TOKO FROM GAS ON FIRST LOAD
+    // AUTO LOAD MASTER TOKO (INSTANT LOCAL DATA - NO CORS, NO GAS DELAY)
     async function autoSyncStoresOnLoad() {
-      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
-      if (!gasUrl) return;
-
-      const stores = await fetchMasterTokoFromGas(gasUrl);
-      if (stores && stores.length > 0) {
-        masterTokoData = stores;
-        localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
+      // Menggunakan data master toko lokal yang sudah tersedia di frontend
+      if (typeof SAMPLE_MASTER_TOKO !== 'undefined' && SAMPLE_MASTER_TOKO.length > 0) {
+        masterTokoData = SAMPLE_MASTER_TOKO;
         populateMasterTokoDropdown();
+        console.log('[Master Toko] Instant load local stores:', masterTokoData.length, 'toko active');
       }
     }
 
-    // SYNC MASTER TOKO FROM GAS WEB APP
+    // SYNC MASTER TOKO FROM LOCAL DATA
     document.getElementById('btnRefreshMasterToko').addEventListener('click', async () => {
-      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
       const btn = document.getElementById('btnRefreshMasterToko');
       btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> <span>Syncing...</span>`;
       lucide.createIcons();
 
-      const stores = await fetchMasterTokoFromGas(gasUrl);
-      if (stores && stores.length > 0) {
-        masterTokoData = stores;
-        localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
-        populateMasterTokoDropdown();
-        alert(`Berhasil sync ${masterTokoData.length} toko dari Google Sheets!`);
-      } else {
-        alert('Info: Menggunakan data master toko lokal / cache. Jika ingin sync terbaru dari Google Sheets, pastikan Web App GAS di-deploy sebagai Anyone.');
-      }
-
-      btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
-      lucide.createIcons();
+      setTimeout(() => {
+        if (typeof SAMPLE_MASTER_TOKO !== 'undefined') {
+          masterTokoData = SAMPLE_MASTER_TOKO;
+          populateMasterTokoDropdown();
+        }
+        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
+        lucide.createIcons();
+        alert(`Data master toko aktif! (${masterTokoData.length} toko siap digunakan)`);
+      }, 300);
     });
 
 
