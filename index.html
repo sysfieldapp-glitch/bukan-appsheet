@@ -2096,7 +2096,9 @@
         };
 
         const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetEncoded}&callback=${callbackName}`;
+        // PENTING: callback harus di dalam tqx (format: tqx=out:json;callback:namaFungsi)
+        // Bukan sebagai ?callback=xxx karena itu bikin gviz return google.visualization.Query.setResponse()
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json;callback:${callbackName}&sheet=${sheetEncoded}`;
         script = document.createElement('script');
         script.src = url;
         script.onerror = (err) => {
