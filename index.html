@@ -730,6 +730,12 @@
     // GLOBAL CONFIG & STATE
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw9nMVLM-w2uywm17o-lHvoZm2gnhQvdJ9YVY74GECZazMLZPO2TEJ-8nMI9aPzyJS4/exec';
     const DEFAULT_SECRET_TOKEN = localStorage.getItem('GAS_SECRET_TOKEN') || 'VISIT_SECRET_KEY_2026';
+    // Spreadsheet IDs per region untuk direct Google Sheets read (gviz/tq - no CORS)
+    const REGION_SHEET_IDS = {
+      LUAR_PULAU: '1JpG5MhUmz1qBtXp58b8FgV-_avCjVZKjNzuc824SUcE',
+      DALAM_PULAU: '1ZF8bAChTAYKMbmfeAamE9R0ge6hzS5AeddptOwJauW0'
+    };
+    const MASTER_TOKO_SHEET_NAME = 'Master_Toko';
     let currentGpsCoords = { lat: null, lng: null, accuracy: null };
 
     // SAMPLE MASTER TOKO (Matching Master_Toko sheet in Google Sheets screenshot)
@@ -2036,17 +2042,20 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO FROM GAS (JSONP ONLY - POST selalu di-redirect Google dan kena CORS)
+    // HELPER FETCH MASTER TOKO LANGSUNG DARI GOOGLE SHEETS via gviz/tq JSONP
+    // (Bypass GAS sepenuhnya - tidak ada redirect, tidak ada CORS)
     function fetchMasterTokoFromGas(gasUrl) {
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
+      const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
       return new Promise((resolve) => {
-        const callbackName = 'gasTokoCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+        const callbackName = 'gvizTokoCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
         let script;
 
         const timeout = setTimeout(() => {
           cleanup();
+          console.warn('[gviz] Timeout loading master toko dari Sheets region', currentRegion);
           resolve(null);
-        }, 12000); // 12 detik timeout
+        }, 12000);
 
         function cleanup() {
           clearTimeout(timeout);
@@ -2054,22 +2063,44 @@
           if (script && script.parentNode) script.parentNode.removeChild(script);
         }
 
-        window[callbackName] = function(data) {
+        window[callbackName] = function(response) {
           cleanup();
-          if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-            console.log('[JSONP] Master toko loaded:', data.data.length, 'toko dari region', currentRegion);
-            resolve(data.data);
+          if (!response || !response.table || !response.table.rows) {
+            console.warn('[gviz] Response tidak valid:', response);
+            resolve(null);
+            return;
+          }
+          // Parse gviz table format ke format masterTokoData
+          const rows = response.table.rows;
+          const result = rows.map(row => {
+            const c = row.c || [];
+            const val = (i) => (c[i] && c[i].v != null) ? String(c[i].v).trim() : '';
+            return {
+              account: val(0),
+              kodeToko: val(1),
+              namaToko: val(2),
+              kodeCrew: val(3),
+              namaCrew: val(4),
+              rute: val(5),
+              tipeToko: val(6)
+            };
+          }).filter(s => s.kodeToko || s.namaToko);
+
+          if (result.length > 0) {
+            console.log('[gviz] Master toko loaded:', result.length, 'toko dari Google Sheets region', currentRegion);
+            resolve(result);
           } else {
-            console.warn('[JSONP] Master toko response invalid or empty:', data);
+            console.warn('[gviz] Data toko kosong dari region', currentRegion);
             resolve(null);
           }
         };
 
-        const url = `${gasUrl}?action=getMasterToko&region=${encodeURIComponent(currentRegion)}&callback=${callbackName}`;
+        const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetEncoded}&callback=${callbackName}`;
         script = document.createElement('script');
         script.src = url;
         script.onerror = (err) => {
-          console.warn('[JSONP] Script load error:', err);
+          console.warn('[gviz] Script load error:', err);
           cleanup();
           resolve(null);
         };
