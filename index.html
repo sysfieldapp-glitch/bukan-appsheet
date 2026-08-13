@@ -1274,13 +1274,18 @@
     function getFormattedWaktuKunjungan() {
       const elJam = document.getElementById('field_WAKTU_JAM');
       const elMenit = document.getElementById('field_WAKTU_MENIT');
+      const sec = Math.floor(Math.random() * 58 + 1).toString().padStart(2, '0');
+
       if (elJam && elMenit && elJam.value !== '' && elMenit.value !== '') {
         const jam = String(elJam.value).padStart(2, '0');
         const menit = String(elMenit.value).padStart(2, '0');
-        return `${jam}:${menit}`;
+        return `${jam}:${menit}:${sec}`;
       }
       const now = new Date();
-      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const jam = String(now.getHours()).padStart(2, '0');
+      const menit = String(now.getMinutes()).padStart(2, '0');
+      const detik = String(now.getSeconds()).padStart(2, '0');
+      return `${jam}:${menit}:${detik}`;
     }
 
     // SELECT STORE AND SWITCH TO FORM VIEW PAGE
@@ -2688,7 +2693,7 @@
     function build244MatrixPayload() {
       const now = new Date();
       const timeStr = now.toTimeString().split(' ')[0];
-      const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+      const dateStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
       const mapStr = (currentGpsCoords.lat && currentGpsCoords.lng) ? `${currentGpsCoords.lat}, ${currentGpsCoords.lng}` : '';
 
       const getVal = (id) => {
