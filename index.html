@@ -2675,13 +2675,17 @@
 
       if (gasUrl) {
         try {
-          const resGas = await fetch(`${gasUrl}?action=getMasterProduk`);
+          const resGas = await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'getMasterProduk' })
+          });
           if (resGas.ok) {
             const dataGas = await resGas.json();
             if (dataGas.status === 'success' && dataGas.data && Object.keys(dataGas.data).length > 0) {
               window.masterProductsMap = dataGas.data;
               loadedFromGas = true;
-              console.log('Master products loaded from GAS Sheet Master_Produk:', Object.keys(window.masterProductsMap).length, 'items');
+              console.log('Master products loaded from GAS Sheet Master_Produk via POST:', Object.keys(window.masterProductsMap).length, 'items');
             }
           }
         } catch (e) {
