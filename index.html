@@ -2984,7 +2984,7 @@
         row[15] = hasPromo ? jenisPromo : ''; // 16: JENIS PROMO (Blank jika tidak promo)
         row[16] = hasPromo ? cleanPromoDate(mulaiPromo) : ''; // 17: MULAI PROMO (DD/MM/YYYY)
         row[17] = hasPromo ? cleanPromoDate(akhirPromo) : ''; // 18: AKHIR PROMO (DD/MM/YYYY)
-        row[18] = hasPromo ? 'YA' : 'TIDAK'; // 19: AKTIF PROMO
+        row[18] = ''; // 19: AKTIF PROMO (Murni BLANK "" agar tidak merusak rumus/format sheet)
 
         row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN
         row[20] = expDateTerdekat; // 21: EXP DATE TERDEKAT
