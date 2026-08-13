@@ -2042,20 +2042,22 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO FROM GAS (POST - works locally, CORS di GitHub Pages dihandle via cache)
+    // HELPER FETCH MASTER TOKO FROM GAS (HTTP GET - Persis Pola gas.js)
     async function fetchMasterTokoFromGas(gasUrl) {
       try {
         const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-        const resPost = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'getMasterToko', region: currentRegion })
-        });
-        if (resPost.ok) {
-          const json = await resPost.json();
-          if (json.status === 'success' && Array.isArray(json.data)) return json.data;
+        const url = `${gasUrl}?action=getMasterToko&region=${encodeURIComponent(currentRegion)}`;
+        const res = await fetch(url, { redirect: 'follow' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success' && Array.isArray(json.data)) {
+            console.log(`[GAS GET] Loaded ${json.data.length} stores from region ${currentRegion}`);
+            return json.data;
+          }
         }
-      } catch(e) {}
+      } catch(e) {
+        console.warn('[GAS GET Error]', e);
+      }
       return null;
     }
 
