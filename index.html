@@ -2998,9 +2998,14 @@
         row[20] = cleanExpDate; // 21: EXP DATE TERDEKAT (Murni BLANK "" jika TIDAK ADA)
         row[21] = cleanQtyExp; // 22: QTY EXP TERDEKAT (Murni BLANK "" jika TIDAK ADA atau 0)
 
-        row[22] = expDisplayStatus; // 23: EXPIRED TERDISPLAY
-        row[23] = expDisplayStatus === 'ADA' ? getVal('field_EXP_DATE_DISPLAY') : ''; // 24
-        row[24] = expDisplayStatus === 'ADA' ? getVal('field_QTY_EXP_DISPLAY') : '0'; // 25
+        const isExpDisplayAda = (expDisplayStatus === 'ADA');
+        const qtyExpDispVal = getVal('field_QTY_EXP_DISPLAY');
+        const cleanExpDateDisplay = isExpDisplayAda ? cleanPromoDate(getVal('field_EXP_DATE_DISPLAY')) : '';
+        const cleanQtyExpDisplay = (isExpDisplayAda && qtyExpDispVal && parseFloat(qtyExpDispVal) > 0) ? String(qtyExpDispVal) : '';
+
+        row[22] = expDisplayStatus; // 23: EXPIRED TERDISPLAY (ADA / TIDAK ADA)
+        row[23] = cleanExpDateDisplay; // 24: EXP DATE DISPLAY (Murni BLANK "" jika TIDAK ADA)
+        row[24] = cleanQtyExpDisplay; // 25: PRODUK EXPIRED TERDISPLAY (QTY) (Murni BLANK "" jika TIDAK ADA atau 0)
         row[25] = expDisplayStatus === 'ADA' ? getVal('field_FOTO_EXP_DISPLAY') : ''; // 26
 
         row[26] = pkmStatus; // 27: PKM
