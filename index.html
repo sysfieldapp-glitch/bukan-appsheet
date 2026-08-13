@@ -3016,25 +3016,30 @@
         row[31] = pkmStatus === 'YA' ? getVal('field_STATUS_TAG') : ''; // 32
         row[32] = pkmStatus === 'YA' ? getVal('field_FOTO_PKM') : ''; // 33
 
-        row[33] = sosStatus; // 34: SOS AUDIT
+        const isSosAda = (sosStatus === 'ADA' || sosStatus === 'YA');
+        row[33] = isSosAda ? 'ADA' : ''; // 34: AUDIT SOS (Murni BLANK "" jika tidak diaudit)
 
         // SOS 6 Categories (Cols 35-70)
         const categories = ['YOGURT', 'UHT_MILK', 'FRESH_MILK', 'DESSERT', 'RTE', 'RTC'];
         let sosIdx = 34; // Col 35 (Index 34)
 
         categories.forEach(catKey => {
-          const full = sosStatus === 'YA' ? getVal(`field_SOS_FULL_${catKey}`) : '0';
-          const used = sosStatus === 'YA' ? getVal(`field_SOS_DIGUNAKAN_${catKey}`) : '0';
-          const fullNum = parseFloat(full) || 0;
-          const usedNum = parseFloat(used) || 0;
-          const pct = fullNum > 0 ? `${Math.round((usedNum / fullNum) * 100)}%` : '0%';
+          const fullVal = isSosAda ? getVal(`field_SOS_FULL_${catKey}`) : '';
+          const usedVal = isSosAda ? getVal(`field_SOS_DIGUNAKAN_${catKey}`) : '';
 
-          row[sosIdx] = full; sosIdx++; // SOS FULL
-          row[sosIdx] = used; sosIdx++; // SOS DIGUNAKAN
-          row[sosIdx] = pct; sosIdx++; // %SOS
-          row[sosIdx] = sosStatus === 'YA' ? getVal(`field_FOTO_SOS_${catKey}_1`) : ''; sosIdx++;
-          row[sosIdx] = sosStatus === 'YA' ? getVal(`field_FOTO_SOS_${catKey}_2`) : ''; sosIdx++;
-          row[sosIdx] = sosStatus === 'YA' ? getVal(`field_FOTO_SOS_${catKey}_3`) : ''; sosIdx++;
+          const cleanFull = (isSosAda && fullVal && parseFloat(fullVal) > 0) ? String(fullVal) : '';
+          const cleanUsed = (isSosAda && usedVal && parseFloat(usedVal) > 0) ? String(usedVal) : '';
+
+          const fullNum = parseFloat(cleanFull) || 0;
+          const usedNum = parseFloat(cleanUsed) || 0;
+          const pct = (fullNum > 0 && cleanUsed !== '') ? `${Math.round((usedNum / fullNum) * 100)}%` : '';
+
+          row[sosIdx] = cleanFull; sosIdx++; // SOS FULL (Murni BLANK "" jika 0/tidak ada)
+          row[sosIdx] = cleanUsed; sosIdx++; // SOS DIGUNAKAN (Murni BLANK "" jika 0/tidak ada)
+          row[sosIdx] = pct; sosIdx++; // %SOS (Murni BLANK "" jika 0/tidak ada)
+          row[sosIdx] = isSosAda ? getVal(`field_FOTO_SOS_${catKey}_1`) : ''; sosIdx++;
+          row[sosIdx] = isSosAda ? getVal(`field_FOTO_SOS_${catKey}_2`) : ''; sosIdx++;
+          row[sosIdx] = isSosAda ? getVal(`field_FOTO_SOS_${catKey}_3`) : ''; sosIdx++;
         });
 
         row[70] = getVal('field_CATATAN_DETAIL'); // 71: CATATAN
