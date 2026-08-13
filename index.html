@@ -2993,6 +2993,15 @@
         row_detail_list: rowDetailList
       };
 
+      // Screen Wake Lock Handler to prevent HP screen timeout during upload
+      let uploadWakeLock = null;
+      try {
+        if ('wakeLock' in navigator) {
+          uploadWakeLock = await navigator.wakeLock.request('screen');
+          console.log('[WakeLock] Screen locked awake for data upload');
+        }
+      } catch (wlErr) {}
+
       try {
         const response = await fetch(gasUrl, {
           method: 'POST',
@@ -3006,7 +3015,13 @@
         if (result.status === 'success' || result.result === 'success') {
           iconSuccess.classList.remove('hidden');
           statusTitle.textContent = 'Kunjungan Berhasil Disimpan!';
-          statusMsg.textContent = `ID Visit: ${result.id_visit || 'OK'}. Data ID ${idCrew} [${currentRegion}] telah terkirim dan siap dilihat di AppSheet.`;
+
+          let photoSummaryStr = '';
+          if (result.photo_stats) {
+            photoSummaryStr = `\n📸 Foto Ter-upload: ${result.photo_stats.uploaded} dari ${result.photo_stats.total} foto.`;
+          }
+
+          statusMsg.textContent = `ID Visit: ${result.id_visit || 'OK'}.${photoSummaryStr}\nData ID ${idCrew} [${currentRegion}] telah terkirim dan siap dilihat di AppSheet.`;
 
           const currentStoreCode = document.getElementById('field_KODETOKO').value.trim();
           markStoreVisitedToday(currentStoreCode);
@@ -3018,7 +3033,11 @@
 
           if (blockDiag && txtDiagLog) {
             blockDiag.classList.remove('hidden');
-            txtDiagLog.value = `[ERROR DIAGNOSTIC LOG]\nTimestamp: ${new Date().toLocaleString('id-ID')}\nRegion: ${currentRegion}\nID Crew: ${idCrew}\nKode Toko: ${kodeToko}\nGAS URL: ${gasUrl}\nMessage: ${result.message || 'Unknown GAS Error'}`;
+            let photoStatsDetail = '';
+            if (result.photo_stats && Array.isArray(result.photo_stats.details)) {
+              photoStatsDetail = '\n[PHOTO UPLOAD STATS]\n' + result.photo_stats.details.map(d => `- ${d.name}: ${d.uploaded ? 'SUCCESS' : 'FAILED (FALLBACK PATH USED)'}`).join('\n');
+            }
+            txtDiagLog.value = `[ERROR DIAGNOSTIC LOG]\nTimestamp: ${new Date().toLocaleString('id-ID')}\nRegion: ${currentRegion}\nID Crew: ${idCrew}\nKode Toko: ${kodeToko}\nGAS URL: ${gasUrl}\nMessage: ${result.message || 'Unknown GAS Error'}${photoStatsDetail}`;
           }
         }
       } catch (err) {
@@ -3030,6 +3049,14 @@
         if (blockDiag && txtDiagLog) {
           blockDiag.classList.remove('hidden');
           txtDiagLog.value = `[CONNECTION ERROR DIAGNOSTIC LOG]\nTimestamp: ${new Date().toLocaleString('id-ID')}\nRegion: ${currentRegion}\nID Crew: ${idCrew}\nKode Toko: ${kodeToko}\nGAS URL: ${gasUrl}\nError Details: ${err.stack || err.message || err}`;
+        }
+      } finally {
+        if (uploadWakeLock) {
+          try {
+            await uploadWakeLock.release();
+            uploadWakeLock = null;
+            console.log('[WakeLock] Screen wake lock released');
+          } catch (e) {}
         }
       }
 
