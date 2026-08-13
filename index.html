@@ -2974,9 +2974,13 @@
           return dStr;
         };
 
-        row[10] = osaStatus; // 11: OSA
-        row[11] = qtyOsa ? String(qtyOsa) : ''; // 12: QTY OSA
-        row[12] = qtySoh ? String(qtySoh) : ''; // 13: QTY SOH
+        const isOsaIsi = (osaStatus === 'ISI');
+        const cleanQtyOsa = (isOsaIsi && qtyOsa && parseFloat(qtyOsa) > 0) ? String(qtyOsa) : '';
+        const cleanQtySoh = (isOsaIsi && qtySoh && parseFloat(qtySoh) > 0) ? String(qtySoh) : '';
+
+        row[10] = osaStatus; // 11: OSA (ISI / TIDAK)
+        row[11] = cleanQtyOsa; // 12: QTY OSA (Murni BLANK "" jika OSA TIDAK atau 0)
+        row[12] = cleanQtySoh; // 13: QTY SOH (Murni BLANK "" jika OSA TIDAK atau 0)
         row[13] = cleanNormalPrice; // 14: HARGA NORMAL
         row[14] = cleanPromoPrice; // 15: HARGA PROMO (Blank jika tidak promo)
 
