@@ -2130,6 +2130,48 @@
         masterTokoData = SAMPLE_MASTER_TOKO;
         populateMasterTokoDropdown();
       }
+      // Setelah master toko load, langsung sync visited today dari GAS di background
+      fetchVisitedTodayFromGas();
+    }
+
+    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini (termasuk AppSheet asli) ke localStorage
+    async function fetchVisitedTodayFromGas() {
+      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
+      const secretToken = localStorage.getItem('GAS_SECRET_TOKEN') || DEFAULT_SECRET_TOKEN;
+      const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
+      const idCrew = document.getElementById('field_IDCREW')?.value.trim() || '';
+
+      if (!gasUrl || !secretToken) return;
+
+      try {
+        const res = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'getVisitedToday',
+            secret_token: secretToken,
+            region: currentRegion,
+            id_crew: idCrew
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success' && Array.isArray(data.visited) && data.visited.length > 0) {
+          // Merge hasil GAS dengan localStorage visited hari ini
+          const key = getTodayKey();
+          const localVisited = getVisitedStoresToday();
+          let merged = [...localVisited];
+          data.visited.forEach(code => {
+            const c = String(code).trim().toUpperCase();
+            if (c && !merged.includes(c)) merged.push(c);
+          });
+          localStorage.setItem(key, JSON.stringify(merged));
+          console.log(`[VisitedToday] Synced ${data.visited.length} visited stores from GAS (total local: ${merged.length})`);
+          // Re-render dashboard supaya badge SUDAH VISIT langsung update
+          renderStoreCardsDashboard();
+        }
+      } catch (e) {
+        console.warn('[VisitedToday] Gagal fetch dari GAS, pakai cache lokal saja.', e);
+      }
     }
 
     // SYNC MASTER TOKO FROM GOOGLE SHEETS DIRECT
@@ -2138,12 +2180,17 @@
       btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> <span>Syncing...</span>`;
       lucide.createIcons();
 
-      const stores = await fetchMasterTokoFromGas();
+      const [stores] = await Promise.all([
+        fetchMasterTokoFromGas(),
+        fetchVisitedTodayFromGas()   // Sync visited hari ini sekaligus
+      ]);
+
       if (stores && stores.length > 0) {
         masterTokoData = stores;
         localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
         populateMasterTokoDropdown();
-        alert(`Berhasil sync ${masterTokoData.length} toko REALTIME dari Google Sheets!`);
+        const visitedCount = getVisitedStoresToday().length;
+        alert(`✅ Berhasil sync ${masterTokoData.length} toko dari Google Sheets!\n📍 Kunjungan hari ini: ${visitedCount} toko sudah VISIT.`);
       } else {
         alert('Info: Gagal mengambil data terbaru dari Google Sheets. Memakai data cache.');
       }
