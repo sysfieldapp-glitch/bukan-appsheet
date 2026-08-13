@@ -82,22 +82,22 @@
       
       <!-- CREW SUMMARY & ROUTE HEADER BANNER (FIXED TOP) -->
       <div class="shrink-0 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg shadow-blue-600/20 space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-3 min-w-0">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center space-x-3 min-w-0 flex-1">
             <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
               <i data-lucide="user-check" class="w-5 h-5 text-white"></i>
             </div>
-            <div class="min-w-0">
-              <span class="text-[10px] text-blue-100 font-semibold uppercase tracking-wider block flex items-center">
-                <span>Crew Sales Active</span>
-                <span id="dashRegionBadge" class="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-white/20 text-white border border-white/30 uppercase inline-block ml-1.5">🌴 LUAR PULAU</span>
-              </span>
-              <h2 id="dashCrewName" class="text-base font-extrabold truncate leading-tight">--</h2>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                <span class="text-[10px] text-blue-100 font-semibold uppercase tracking-wider">Crew Sales Active</span>
+                <span id="dashRegionBadge" class="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-white/20 text-white border border-white/30 uppercase inline-block">🌴 LUAR PULAU</span>
+              </div>
+              <h2 id="dashCrewName" class="text-base font-extrabold truncate leading-tight mt-0.5">--</h2>
               <p id="dashCrewId" class="text-xs text-blue-200 font-mono font-medium">ID: --</p>
             </div>
           </div>
 
-          <div class="flex items-center space-x-1.5 shrink-0">
+          <div class="flex items-center space-x-1.5 shrink-0 pt-1">
             <button type="button" id="btnRefreshMasterToko" title="Sync Master Toko" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all border border-white/20 flex items-center space-x-1">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Sync Toko</span>
@@ -1157,9 +1157,6 @@
                   </span>
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                     🏷️ ${tipeTokoLabel}
-                  </span>
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    RUTE ${ruteLabel}
                   </span>
                 </div>
                 <h3 class="text-sm font-extrabold text-slate-900 truncate">
