@@ -2958,16 +2958,20 @@
           sosStatus = getVal('field_SOS_STATUS');
         }
 
+        // Pastikan jika harga promo adalah 0, '0', null, atau kosong -> dikirim sebagai murni BLANK ""
+        const cleanPromoPrice = (promoPrice && parseFloat(promoPrice) > 0) ? String(promoPrice) : '';
+        const cleanNormalPrice = (normalPrice && parseFloat(normalPrice) > 0) ? String(normalPrice) : '';
+
         row[10] = osaStatus; // 11: OSA
         row[11] = qtyOsa ? String(qtyOsa) : ''; // 12: QTY OSA
         row[12] = qtySoh ? String(qtySoh) : ''; // 13: QTY SOH
-        row[13] = normalPrice ? String(normalPrice) : ''; // 14: HARGA NORMAL
-        row[14] = promoPrice ? String(promoPrice) : ''; // 15: HARGA PROMO
+        row[13] = cleanNormalPrice; // 14: HARGA NORMAL
+        row[14] = cleanPromoPrice; // 15: HARGA PROMO (Blank jika tidak promo)
 
-        const hasPromo = promoPrice && parseFloat(promoPrice) > 0;
-        row[15] = hasPromo ? jenisPromo : ''; // 16: JENIS PROMO
-        row[16] = hasPromo ? mulaiPromo : ''; // 17: MULAI PROMO
-        row[17] = hasPromo ? akhirPromo : ''; // 18: AKHIR PROMO
+        const hasPromo = cleanPromoPrice !== '';
+        row[15] = hasPromo ? jenisPromo : ''; // 16: JENIS PROMO (Blank jika tidak promo)
+        row[16] = hasPromo ? mulaiPromo : ''; // 17: MULAI PROMO (Blank jika tidak promo)
+        row[17] = hasPromo ? akhirPromo : ''; // 18: AKHIR PROMO (Blank jika tidak promo)
         row[18] = hasPromo ? 'YA' : 'TIDAK'; // 19: AKTIF PROMO
 
         row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN
