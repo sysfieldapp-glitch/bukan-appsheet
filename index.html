@@ -1075,6 +1075,17 @@
         filteredStores = masterTokoData;
         if (dashCrewName) dashCrewName.textContent = activeIdCrew.toUpperCase();
         if (dashCrewId) dashCrewId.textContent = `ID: ${activeIdCrew.toUpperCase()}`;
+      if (dashRouteInfo) {
+        if (filteredStores.length > 0) {
+          const uniqueRoutes = Array.from(new Set(filteredStores.map(s => String(s.rute || '').trim()).filter(Boolean)));
+          if (uniqueRoutes.length > 0) {
+            dashRouteInfo.textContent = `Rute ${uniqueRoutes.join(', ')}`;
+          } else {
+            dashRouteInfo.textContent = `Tgl ${todayDateStr}`;
+          }
+        } else {
+          dashRouteInfo.textContent = `Rute Tgl ${todayDateStr}`;
+        }
       }
 
       window.activeFilteredStores = filteredStores;
