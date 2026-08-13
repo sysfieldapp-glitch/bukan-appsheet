@@ -2962,6 +2962,18 @@
         const cleanPromoPrice = (promoPrice && parseFloat(promoPrice) > 0) ? String(promoPrice) : '';
         const cleanNormalPrice = (normalPrice && parseFloat(normalPrice) > 0) ? String(normalPrice) : '';
 
+        // Helper merapikan tanggal promo (Mengubah 2026-07-31T16:00:00.000Z atau YYYY-MM-DD jadi DD/MM/YYYY)
+        const cleanPromoDate = (rawD) => {
+          if (!rawD) return '';
+          let dStr = String(rawD).trim();
+          if (dStr.includes('T')) dStr = dStr.split('T')[0]; // Ambil YYYY-MM-DD dari ISO
+          if (dStr.includes('-')) {
+            const p = dStr.split('-');
+            if (p.length === 3) return `${p[2].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[0]}`;
+          }
+          return dStr;
+        };
+
         row[10] = osaStatus; // 11: OSA
         row[11] = qtyOsa ? String(qtyOsa) : ''; // 12: QTY OSA
         row[12] = qtySoh ? String(qtySoh) : ''; // 13: QTY SOH
@@ -2970,8 +2982,8 @@
 
         const hasPromo = cleanPromoPrice !== '';
         row[15] = hasPromo ? jenisPromo : ''; // 16: JENIS PROMO (Blank jika tidak promo)
-        row[16] = hasPromo ? mulaiPromo : ''; // 17: MULAI PROMO (Blank jika tidak promo)
-        row[17] = hasPromo ? akhirPromo : ''; // 18: AKHIR PROMO (Blank jika tidak promo)
+        row[16] = hasPromo ? cleanPromoDate(mulaiPromo) : ''; // 17: MULAI PROMO (DD/MM/YYYY)
+        row[17] = hasPromo ? cleanPromoDate(akhirPromo) : ''; // 18: AKHIR PROMO (DD/MM/YYYY)
         row[18] = hasPromo ? 'YA' : 'TIDAK'; // 19: AKTIF PROMO
 
         row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN
