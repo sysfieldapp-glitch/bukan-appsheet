@@ -2033,22 +2033,37 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO FROM GAS (POST DIRECT TO AVOID GET ECHO 404)
-    async function fetchMasterTokoFromGas(gasUrl) {
-      try {
+    // HELPER FETCH MASTER TOKO FROM GAS (JSONP - bypass CORS tanpa perlu redeploy GAS)
+    function fetchMasterTokoFromGas(gasUrl) {
+      return new Promise((resolve) => {
         const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-        const resPost = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'getMasterToko', region: currentRegion })
-        });
-        if (resPost.ok) {
-          const json = await resPost.json();
-          if (json.status === 'success' && Array.isArray(json.data)) return json.data;
-        }
-      } catch(e){}
+        const callbackName = 'gasCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        const timeout = setTimeout(() => {
+          cleanup();
+          resolve(null);
+        }, 10000); // timeout 10 detik
 
-      return null;
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          if (script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          if (data && data.status === 'success' && Array.isArray(data.data)) {
+            resolve(data.data);
+          } else {
+            resolve(null);
+          }
+        };
+
+        const url = `${gasUrl}?action=getMasterToko&region=${encodeURIComponent(currentRegion)}&callback=${callbackName}`;
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = () => { cleanup(); resolve(null); };
+        document.head.appendChild(script);
+      });
     }
 
     // AUTO SYNC MASTER TOKO FROM GAS ON FIRST LOAD
