@@ -2042,72 +2042,21 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO LANGSUNG DARI GOOGLE SHEETS via gviz/tq JSONP
-    // (Bypass GAS sepenuhnya - tidak ada redirect, tidak ada CORS)
-    function fetchMasterTokoFromGas(gasUrl) {
-      const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-      const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
-      return new Promise((resolve) => {
-        const callbackName = 'gvizTokoCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-        let script;
-
-        const timeout = setTimeout(() => {
-          cleanup();
-          console.warn('[gviz] Timeout loading master toko dari Sheets region', currentRegion);
-          resolve(null);
-        }, 12000);
-
-        function cleanup() {
-          clearTimeout(timeout);
-          if (window[callbackName]) delete window[callbackName];
-          if (script && script.parentNode) script.parentNode.removeChild(script);
+    // HELPER FETCH MASTER TOKO FROM GAS (POST - works locally, CORS di GitHub Pages dihandle via cache)
+    async function fetchMasterTokoFromGas(gasUrl) {
+      try {
+        const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
+        const resPost = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getMasterToko', region: currentRegion })
+        });
+        if (resPost.ok) {
+          const json = await resPost.json();
+          if (json.status === 'success' && Array.isArray(json.data)) return json.data;
         }
-
-        window[callbackName] = function(response) {
-          cleanup();
-          if (!response || !response.table || !response.table.rows) {
-            console.warn('[gviz] Response tidak valid:', response);
-            resolve(null);
-            return;
-          }
-          // Parse gviz table format ke format masterTokoData
-          const rows = response.table.rows;
-          const result = rows.map(row => {
-            const c = row.c || [];
-            const val = (i) => (c[i] && c[i].v != null) ? String(c[i].v).trim() : '';
-            return {
-              account: val(0),
-              kodeToko: val(1),
-              namaToko: val(2),
-              kodeCrew: val(3),
-              namaCrew: val(4),
-              rute: val(5),
-              tipeToko: val(6)
-            };
-          }).filter(s => s.kodeToko || s.namaToko);
-
-          if (result.length > 0) {
-            console.log('[gviz] Master toko loaded:', result.length, 'toko dari Google Sheets region', currentRegion);
-            resolve(result);
-          } else {
-            console.warn('[gviz] Data toko kosong dari region', currentRegion);
-            resolve(null);
-          }
-        };
-
-        const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
-        // PENTING: callback harus di dalam tqx (format: tqx=out:json;callback:namaFungsi)
-        // Bukan sebagai ?callback=xxx karena itu bikin gviz return google.visualization.Query.setResponse()
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json;callback:${callbackName}&sheet=${sheetEncoded}`;
-        script = document.createElement('script');
-        script.src = url;
-        script.onerror = (err) => {
-          console.warn('[gviz] Script load error:', err);
-          cleanup();
-          resolve(null);
-        };
-        document.head.appendChild(script);
-      });
+      } catch(e) {}
+      return null;
     }
 
     // AUTO SYNC MASTER TOKO FROM GAS ON FIRST LOAD
