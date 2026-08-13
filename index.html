@@ -2827,17 +2827,17 @@
         const selectedBarcode = getVal('selectDetailProduct');
         const isActiveProduct = (selectedBarcode && String(selectedBarcode).trim() === barcodeStr);
 
-        let normalPrice = p.normal || 0;
-        let promoPrice = p.promo || 0;
+        let normalPrice = p.normal || '';
+        let promoPrice = p.promo || '';
         let osaStatus = 'TIDAK';
-        let qtyOsa = '0';
-        let qtySoh = p.stock || '0';
+        let qtyOsa = '';
+        let qtySoh = p.stock || '';
         let jenisPromo = p.jenis_promo || '';
         let mulaiPromo = p.mulai_promo || '';
         let akhirPromo = p.akhir_promo || '';
         let exp1BulanStatus = 'TIDAK ADA';
         let expDateTerdekat = '';
-        let qtyExpTerdekat = '0';
+        let qtyExpTerdekat = '';
         let expDisplayStatus = 'TIDAK ADA';
         let pkmStatus = 'TIDAK ADA INSTRUKSI';
         let sosStatus = 'TIDAK ADA';
@@ -2846,26 +2846,26 @@
           normalPrice = getVal('field_HARGANORMAL') || normalPrice;
           promoPrice = getVal('field_HARGAPROMO') || promoPrice;
           osaStatus = getVal('field_OSA_STATUS');
-          qtyOsa = osaStatus === 'ISI' ? getVal('field_QTY_OSA') : '0';
-          qtySoh = osaStatus === 'ISI' ? getVal('field_QTY_SOH') : '0';
+          qtyOsa = osaStatus === 'ISI' ? getVal('field_QTY_OSA') : '';
+          qtySoh = osaStatus === 'ISI' ? getVal('field_QTY_SOH') : '';
           jenisPromo = getVal('field_JENISPROMO');
           mulaiPromo = getVal('field_MULAIPROMO');
           akhirPromo = getVal('field_AKHIRPROMO');
           exp1BulanStatus = getVal('field_EXP_1BULAN_STATUS');
           expDateTerdekat = exp1BulanStatus === 'ADA' ? getVal('field_EXP_DATE_TERDEKAT') : '';
-          qtyExpTerdekat = exp1BulanStatus === 'ADA' ? getVal('field_QTY_EXP_TERDEKAT') : '0';
+          qtyExpTerdekat = exp1BulanStatus === 'ADA' ? getVal('field_QTY_EXP_TERDEKAT') : '';
           expDisplayStatus = getVal('field_EXP_DISPLAY_STATUS');
           pkmStatus = getVal('field_PKM_STATUS');
           sosStatus = getVal('field_SOS_STATUS');
         }
 
         row[10] = osaStatus; // 11: OSA
-        row[11] = qtyOsa; // 12: QTY OSA
-        row[12] = qtySoh; // 13: QTY SOH
-        row[13] = String(normalPrice); // 14: HARGA NORMAL
-        row[14] = String(promoPrice); // 15: HARGA PROMO
+        row[11] = qtyOsa ? String(qtyOsa) : ''; // 12: QTY OSA
+        row[12] = qtySoh ? String(qtySoh) : ''; // 13: QTY SOH
+        row[13] = normalPrice ? String(normalPrice) : ''; // 14: HARGA NORMAL
+        row[14] = promoPrice ? String(promoPrice) : ''; // 15: HARGA PROMO
 
-        const hasPromo = parseFloat(promoPrice) > 0;
+        const hasPromo = promoPrice && parseFloat(promoPrice) > 0;
         row[15] = hasPromo ? jenisPromo : ''; // 16: JENIS PROMO
         row[16] = hasPromo ? mulaiPromo : ''; // 17: MULAI PROMO
         row[17] = hasPromo ? akhirPromo : ''; // 18: AKHIR PROMO
