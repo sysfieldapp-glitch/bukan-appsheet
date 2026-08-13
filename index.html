@@ -2060,7 +2060,15 @@
     }
 
     // AUTO SYNC MASTER TOKO FROM GAS ON FIRST LOAD
+    // (Hanya jalan di localhost - di GitHub Pages, data toko sudah dimuat dari GitHub raw JSON)
     async function autoSyncStoresOnLoad() {
+      const isGithubPages = window.location.hostname.includes('github.io');
+      if (isGithubPages) {
+        // Tidak perlu sync dari GAS - data sudah ada dari store_index.json + regional JSON
+        console.log('[Sync] GitHub Pages detected - skipping GAS master toko sync (using GitHub raw JSON instead)');
+        return;
+      }
+
       const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
       if (!gasUrl) return;
 
@@ -2074,17 +2082,28 @@
 
     // SYNC MASTER TOKO FROM GAS WEB APP
     document.getElementById('btnRefreshMasterToko').addEventListener('click', async () => {
-      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
+      const isGithubPages = window.location.hostname.includes('github.io');
       const btn = document.getElementById('btnRefreshMasterToko');
       btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> <span>Syncing...</span>`;
       lucide.createIcons();
 
+      if (isGithubPages) {
+        // Di GitHub Pages, data toko dimuat dari GitHub raw JSON - sudah otomatis saat ID diinput
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
+          lucide.createIcons();
+          alert('Data toko sudah otomatis dimuat dari GitHub saat input ID Crew. Tidak perlu sync manual.');
+        }, 500);
+        return;
+      }
+
+      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
       const stores = await fetchMasterTokoFromGas(gasUrl);
       if (stores && stores.length > 0) {
         masterTokoData = stores;
         localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
         populateMasterTokoDropdown();
-        alert(`Berhasil sync ${masterTokoData.length} toko dari Google Sheets Luar Pulau!`);
+        alert(`Berhasil sync ${masterTokoData.length} toko dari Google Sheets!`);
       } else {
         alert('Info: Menggunakan data master toko lokal. Jika ingin sync terbaru dari Google Sheets, pastikan proyek Apps Script telah di-deploy ulang (Manage Deployments -> Edit -> New Version -> Deploy).');
       }
@@ -2092,6 +2111,7 @@
       btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
       lucide.createIcons();
     });
+
 
     // USER PROFILE HANDLERS (LOCAL STORAGE VIA ID CREW ONLY)
     function initUserProfile() {
