@@ -2938,8 +2938,8 @@
         let expDateTerdekat = '';
         let qtyExpTerdekat = '';
         let expDisplayStatus = 'TIDAK ADA';
-        let pkmStatus = 'TIDAK ADA INSTRUKSI';
-        let sosStatus = 'TIDAK ADA';
+        let pkmStatus = '';
+        let sosStatus = '';
 
         if (isActiveProduct) {
           normalPrice = getVal('field_HARGANORMAL') || normalPrice;
@@ -3008,13 +3008,14 @@
         row[24] = cleanQtyExpDisplay; // 25: PRODUK EXPIRED TERDISPLAY (QTY) (Murni BLANK "" jika TIDAK ADA atau 0)
         row[25] = expDisplayStatus === 'ADA' ? getVal('field_FOTO_EXP_DISPLAY') : ''; // 26
 
-        row[26] = pkmStatus; // 27: PKM
-        row[27] = pkmStatus === 'YA' ? getVal('field_PKM') : ''; // 28
-        row[28] = pkmStatus === 'YA' ? getVal('field_NPKM') : ''; // 29
-        row[29] = pkmStatus === 'YA' ? getVal('field_MINNOR') : ''; // 30
-        row[30] = pkmStatus === 'YA' ? getVal('field_N_PLUS') : ''; // 31
-        row[31] = pkmStatus === 'YA' ? getVal('field_STATUS_TAG') : ''; // 32
-        row[32] = pkmStatus === 'YA' ? getVal('field_FOTO_PKM') : ''; // 33
+        const isPkmYa = (pkmStatus === 'YA');
+        row[26] = isPkmYa ? 'YA' : ''; // 27: PKM (Murni BLANK "" jika tidak ada instruksi)
+        row[27] = isPkmYa ? getVal('field_PKM') : ''; // 28
+        row[28] = isPkmYa ? getVal('field_NPKM') : ''; // 29
+        row[29] = isPkmYa ? getVal('field_MINNOR') : ''; // 30
+        row[30] = isPkmYa ? getVal('field_N_PLUS') : ''; // 31
+        row[31] = isPkmYa ? getVal('field_STATUS_TAG') : ''; // 32
+        row[32] = isPkmYa ? getVal('field_FOTO_PKM') : ''; // 33
 
         const isSosAda = (sosStatus === 'ADA' || sosStatus === 'YA');
         row[33] = isSosAda ? 'ADA' : ''; // 34: AUDIT SOS (Murni BLANK "" jika tidak diaudit)
