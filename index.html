@@ -2667,41 +2667,38 @@
       return row;
     }
 
-    // MASTER PRODUCTS MAPPING ENGINE (GAS SHEET + LOCAL JSON FALLBACK)
+    // MASTER PRODUCTS MAPPING ENGINE (INSTANT LOCAL JSON + GAS FALLBACK)
     window.masterProductsMap = {};
     async function loadMasterProductsJson() {
-      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
-      let loadedFromGas = false;
-
-      if (gasUrl) {
-        try {
-          const resGas = await fetch(gasUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'getMasterProduk' })
-          });
-          if (resGas.ok) {
-            const dataGas = await resGas.json();
-            if (dataGas.status === 'success' && dataGas.data && Object.keys(dataGas.data).length > 0) {
-              window.masterProductsMap = dataGas.data;
-              loadedFromGas = true;
-              console.log('Master products loaded from GAS Sheet Master_Produk via POST:', Object.keys(window.masterProductsMap).length, 'items');
-            }
-          }
-        } catch (e) {
-          console.warn('Could not fetch Master_Produk from GAS, trying local master_products.json fallback:', e);
+      let loaded = false;
+      try {
+        const res = await fetch('master_products.json');
+        if (res.ok) {
+          window.masterProductsMap = await res.json();
+          loaded = true;
+          console.log('Master products loaded instantly from local JSON:', Object.keys(window.masterProductsMap).length, 'items');
         }
+      } catch (err) {
+        console.warn('Could not fetch master_products.json:', err);
       }
 
-      if (!loadedFromGas) {
-        try {
-          const res = await fetch('master_products.json');
-          if (res.ok) {
-            window.masterProductsMap = await res.json();
-            console.log('Master products loaded from local JSON fallback:', Object.keys(window.masterProductsMap).length, 'items');
-          }
-        } catch (err) {
-          console.warn('Could not fetch master_products.json, using smart parser fallback:', err);
+      if (!loaded) {
+        const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
+        if (gasUrl) {
+          try {
+            const resGas = await fetch(gasUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'getMasterProduk' })
+            });
+            if (resGas.ok) {
+              const dataGas = await resGas.json();
+              if (dataGas.status === 'success' && dataGas.data && Object.keys(dataGas.data).length > 0) {
+                window.masterProductsMap = dataGas.data;
+                console.log('Master products loaded from GAS fallback:', Object.keys(window.masterProductsMap).length, 'items');
+              }
+            }
+          } catch (e) {}
         }
       }
     }
