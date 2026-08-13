@@ -1,0 +1,410 @@
+{
+  "8993200670635": {
+    "brand": "CIMORY GROUP",
+    "katagori": "DESSERT",
+    "nama_barang": "MATCHA_EATMILK 80GR",
+    "packsize": "80GR"
+  },
+  "8993200666201": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "MATCHA_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200666836": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "ALMOND_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200661305": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200669561": {
+    "brand": "CIMORY GROUP",
+    "katagori": "DESSERT",
+    "nama_barang": "CHOCOLATE_EATMILK 80GR",
+    "packsize": "80GR"
+  },
+  "8993200666898": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "CHOCO MALT_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200346318": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS KEJU_SINGLES",
+    "packsize": ""
+  },
+  "8993200669417": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRY_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200670529": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "MATCHA_UHT NO SUGAR 225ML",
+    "packsize": "225ML"
+  },
+  "8993200669769": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "THAI TEA_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200669592": {
+    "brand": "CIMORY GROUP",
+    "katagori": "DESSERT",
+    "nama_barang": "HAZELNUT_EATMILK 80GR",
+    "packsize": "80GR"
+  },
+  "8993200670895": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "Cmry ygrt Bites Cheescake",
+    "packsize": ""
+  },
+  "8993200000005": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "BAKSO GOCHUJANG_SINGLES",
+    "packsize": ""
+  },
+  "8993200345717": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS HOT_SINGLES",
+    "packsize": ""
+  },
+  "8993200664993": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY_CYD ZERO 240 ML",
+    "packsize": "240ML"
+  },
+  "8993200666218": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "STRAWBERRY_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200669363": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "MANGO STICKY RICE_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200666133": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "CHOCOLATE_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200663057": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "MIX BERRY_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200668502": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "BAKSO KEJU_SINGLES",
+    "packsize": ""
+  },
+  "8993200668243": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS GOCHUJANG_SINGLES",
+    "packsize": ""
+  },
+  "8993200667246": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "TIRAMISU_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200670536": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "MARIE BISCUIT_UHT NO SUGAR 225ML",
+    "packsize": "225ML"
+  },
+  "8993200661657": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRY_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200666157": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "FULL CREAM_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200670499": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "CHOCOLATE_UHT NO SUGAR 225ML",
+    "packsize": "225ML"
+  },
+  "8993200668915": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200669264": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY LYCHEE_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200668908": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "ORIGINAL_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200661350": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "MIX FRUIT_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200669301": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY MANGO_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200666805": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "HAZELNUT_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200669400": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200669622": {
+    "brand": "CIMORY GROUP",
+    "katagori": "DESSERT",
+    "nama_barang": "MARIE BISCUIT_EATMILK 80GR",
+    "packsize": "80GR"
+  },
+  "8993200000036": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS TOM YUM_SINGLES",
+    "packsize": ""
+  },
+  "8993200666928": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "MARIE BISCUIT_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200669271": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BERRY BLEND_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200665006": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY MANGO_CYD ZERO 240ML",
+    "packsize": "240ML"
+  },
+  "8993200666867": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "CASHEW_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200670307": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "KYOHO GRAPE_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200665013": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRY_CYD ZERO 240 ML",
+    "packsize": "240ML"
+  },
+  "8993200348312": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS ORIGINAL_SINGLES",
+    "packsize": ""
+  },
+  "8993200668496": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "BAKSO ORIGINAL_SINGLES",
+    "packsize": ""
+  },
+  "8993200668922": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRY_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200347315": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "SOSIS MINI_SINGLES",
+    "packsize": ""
+  },
+  "8993200666959": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRRY_SQUEEZE 120GR",
+    "packsize": "120GR"
+  },
+  "8993200668335": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BROWN SUGAR_SQUEEZE 120GR",
+    "packsize": "120GR"
+  },
+  "8993200666942": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "STRAWBERRY_SQUEEZE 120GR",
+    "packsize": "120GR"
+  },
+  "8993200661343": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "MANGO STICKY RICE_SQUEEZE 120GR",
+    "packsize": "120GR"
+  },
+  "8993200663064": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "PLAIN_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200668984": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTE",
+    "nama_barang": "BAKSO HOT_SINGLES",
+    "packsize": ""
+  },
+  "8993200664399": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "NUGGET CRISPY 450GR",
+    "packsize": "450GR"
+  },
+  "8993200664382": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "NUGGET ORIGINAL 450GR",
+    "packsize": "450GR"
+  },
+  "8993200667772": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "COCKTAIL ORIGINAL_SOSIS 250GR",
+    "packsize": "250GR"
+  },
+  "8993200666935": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "ORIGINAL_SQUEEZE 120GR",
+    "packsize": "120GR"
+  },
+  "8993200669134": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "NUGGET CRISPY SPICY 450GR",
+    "packsize": "450GR"
+  },
+  "8993200670291": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "ORANGE_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200664986": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "TROPICAL FRUIT_CYD ZERO 240ML",
+    "packsize": "240ML"
+  },
+  "8993200668076": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "NUGGET STICK CRISPY 450GR",
+    "packsize": "450GR"
+  },
+  "8993200669462": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BROWN SUGAR_STICKPACK 40GR",
+    "packsize": "40GR"
+  },
+  "8993200661299": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "LYCHEE_CYD 240ML",
+    "packsize": "240ML"
+  },
+  "8993200670505": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "ALMOND_UHT NO SUGAR 225ML",
+    "packsize": "225ML"
+  },
+  "8993200669776": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "MILK TEA_UHT 250ML",
+    "packsize": "250ML"
+  },
+  "8993200669240": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "ALMOND DATES_BITES 120GR",
+    "packsize": "120GR"
+  },
+  "8993200666263": {
+    "brand": "CIMORY GROUP",
+    "katagori": "UHT MILK",
+    "nama_barang": "CHOCOLATE_UHT 125ML",
+    "packsize": "125ML"
+  },
+  "8996001356753": {
+    "brand": "CIMORY GROUP",
+    "katagori": "YOGURT",
+    "nama_barang": "BLUEBERRY_CYD ZERO 240ML",
+    "packsize": "240ML"
+  },
+  "8993200664337": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "FRANKFURTER COCKTAIL_SOSIS 500GR",
+    "packsize": "500GR"
+  },
+  "8993200662302": {
+    "brand": "CIMORY GROUP",
+    "katagori": "RTC",
+    "nama_barang": "COCKTAIL ORIGINAL_SOSIS 500GR",
+    "packsize": "500GR"
+  }
+}
