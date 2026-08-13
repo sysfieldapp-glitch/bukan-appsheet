@@ -2042,50 +2042,93 @@
       }
     }
 
-    // HELPER FETCH MASTER TOKO FROM GAS (HTTP GET - Persis Pola gas.js)
-    async function fetchMasterTokoFromGas(gasUrl) {
+    // PARSER SIMPLE CSV UNTUK DIRECT GOOGLE SHEETS
+    function parseGoogleSheetsCSV(csvText) {
+      const lines = csvText.split(/\r?\n/);
+      if (lines.length <= 1) return [];
+
+      const result = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        // Simple CSV splitter handling quoted values
+        const cols = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+        const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+
+        // Skip header row if it contains 'ACCOUNT' or 'KODE TOKO'
+        const accountStr = clean[0] || '';
+        const kodeStr = clean[1] || '';
+        if (accountStr.toUpperCase().includes('ACCOUNT') && kodeStr.toUpperCase().includes('KODE')) continue;
+        if (!clean[1] && !clean[2]) continue; // Skip jika kode/nama toko kosong
+
+        result.push({
+          account: clean[0] || '',
+          kodeToko: clean[1] || '',
+          namaToko: clean[2] || '',
+          kodeCrew: clean[3] || '',
+          namaCrew: clean[4] || '',
+          rute: clean[5] || '',
+          tipeToko: clean[6] || ''
+        });
+      }
+      return result;
+    }
+
+    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% BEBAS CORS & 100% REALTIME)
+    async function fetchMasterTokoFromGas() {
+      const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
+      const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
+      const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}`;
+
       try {
-        const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-        const url = `${gasUrl}?action=getMasterToko&region=${encodeURIComponent(currentRegion)}`;
-        const res = await fetch(url, { redirect: 'follow' });
+        const res = await fetch(csvUrl, { cache: 'no-cache' });
         if (res.ok) {
-          const json = await res.json();
-          if (json.status === 'success' && Array.isArray(json.data)) {
-            console.log(`[GAS GET] Loaded ${json.data.length} stores from region ${currentRegion}`);
-            return json.data;
+          const csvText = await res.text();
+          const stores = parseGoogleSheetsCSV(csvText);
+          if (stores && stores.length > 0) {
+            console.log(`[Google Sheets Direct CSV] Successfully synced ${stores.length} stores from region ${currentRegion}`);
+            return stores;
           }
         }
-      } catch(e) {
-        console.warn('[GAS GET Error]', e);
+      } catch (e) {
+        console.warn('[Google Sheets Direct CSV Error]', e);
       }
       return null;
     }
 
-    // AUTO LOAD MASTER TOKO (INSTANT LOCAL DATA - NO CORS, NO GAS DELAY)
+    // AUTO LOAD MASTER TOKO REALTIME DARI GOOGLE SHEETS
     async function autoSyncStoresOnLoad() {
-      // Menggunakan data master toko lokal yang sudah tersedia di frontend
-      if (typeof SAMPLE_MASTER_TOKO !== 'undefined' && SAMPLE_MASTER_TOKO.length > 0) {
+      const stores = await fetchMasterTokoFromGas();
+      if (stores && stores.length > 0) {
+        masterTokoData = stores;
+        localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
+        populateMasterTokoDropdown();
+      } else if (typeof SAMPLE_MASTER_TOKO !== 'undefined' && SAMPLE_MASTER_TOKO.length > 0) {
         masterTokoData = SAMPLE_MASTER_TOKO;
         populateMasterTokoDropdown();
-        console.log('[Master Toko] Instant load local stores:', masterTokoData.length, 'toko active');
       }
     }
 
-    // SYNC MASTER TOKO FROM LOCAL DATA
+    // SYNC MASTER TOKO FROM GOOGLE SHEETS DIRECT
     document.getElementById('btnRefreshMasterToko').addEventListener('click', async () => {
       const btn = document.getElementById('btnRefreshMasterToko');
       btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> <span>Syncing...</span>`;
       lucide.createIcons();
 
-      setTimeout(() => {
-        if (typeof SAMPLE_MASTER_TOKO !== 'undefined') {
-          masterTokoData = SAMPLE_MASTER_TOKO;
-          populateMasterTokoDropdown();
-        }
-        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
-        lucide.createIcons();
-        alert(`Data master toko aktif! (${masterTokoData.length} toko siap digunakan)`);
-      }, 300);
+      const stores = await fetchMasterTokoFromGas();
+      if (stores && stores.length > 0) {
+        masterTokoData = stores;
+        localStorage.setItem('MASTER_TOKO_DATA', JSON.stringify(masterTokoData));
+        populateMasterTokoDropdown();
+        alert(`Berhasil sync ${masterTokoData.length} toko REALTIME dari Google Sheets!`);
+      } else {
+        alert('Info: Gagal mengambil data terbaru dari Google Sheets. Memakai data cache.');
+      }
+
+      btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Sync Toko</span>`;
+      lucide.createIcons();
     });
 
 
