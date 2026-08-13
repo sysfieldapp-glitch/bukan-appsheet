@@ -2749,7 +2749,7 @@
       row[30] = getVal('field_AKTIVITAS_PROMO'); // 31: AKTIVITAS PROMO
 
       // Helper function for Promo Regular Block (15 cols: 1 status + 7 produk + 7 foto)
-      // Index 32-122 (Cols 32-122 -> row[31]-row[121])
+      // Index 32-121 (Cols 32-121 -> row[31]-row[120])
       const promoTypes = ['DISKON', 'B1G1', 'B2G1', 'GIMMICK', 'PWP', 'LAINNYA'];
       const productKeys = ['YOGURT', 'THICK', 'UHT_MILK', 'FRESH_MILK', 'DESSERT', 'KANZLER', 'MAYONAISE'];
       let promoIdx = 31; // Column 32
@@ -2769,29 +2769,31 @@
 
       row[121] = getVal('field_PROMO_LAINNYA_CATATAN'); // 122: CATATAN PROMO_LAINNYA (row[121])
 
-      // Helper function for Promo Khusus Block (20 cols: 1 header status + 1 katagori + 16 varian + 2 foto)
+      // Helper function for Promo Khusus Block (19 cols: 1 header status + 1 katagori + 15 varian + 2 foto)
       const fillPromoKhususBlock = (blockKey, startIdx, categoryName) => {
         const isAda = getVal(`field_${blockKey}_ADA`);
-        row[startIdx] = isAda; // Status ADA / TIDAK ADA (Col 117, 137, 157, 177, 197)
-        row[startIdx + 1] = isAda === 'ADA' ? categoryName : ''; // KATAGORI (Col 118, 138, 158, 178, 198)
+        row[startIdx] = isAda; // Status ADA / TIDAK ADA
+        row[startIdx + 1] = isAda === 'ADA' ? categoryName : ''; // KATAGORI
 
-        for (let i = 1; i <= 16; i++) {
+        // 15 Varian Produk (1-15)
+        for (let i = 1; i <= 15; i++) {
           const chk = document.getElementById(`chk_${blockKey}_${i}`);
           row[startIdx + 1 + i] = (isAda === 'ADA' && chk && chk.checked) ? 'YA' : '';
         }
 
-        row[startIdx + 18] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_1`) : '';
-        row[startIdx + 19] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_2`) : '';
+        // 2 Foto Promo Khusus
+        row[startIdx + 17] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_1`) : '';
+        row[startIdx + 18] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_2`) : '';
       };
 
-      // Fill 5 Promo Khusus Blocks (20 Cols each = 100 Cols total)
-      fillPromoKhususBlock('PSM', 116, 'PSM'); // Cols 117-136 (row[116]-row[135])
-      fillPromoKhususBlock('MURAH', 136, 'MURAH SEJAGAT'); // Cols 137-156 (row[136]-row[155])
-      fillPromoKhususBlock('PWP_KHUSUS', 156, 'PWP'); // Cols 157-176 (row[156]-row[175])
-      fillPromoKhususBlock('JSM', 176, 'JSM'); // Cols 177-196 (row[176]-row[195])
-      fillPromoKhususBlock('GANTUNG', 196, 'GANTUNG'); // Cols 197-216 (row[196]-row[215])
+      // Fill 5 Promo Khusus Blocks (19 Cols each = 95 Cols total)
+      fillPromoKhususBlock('PSM', 122, 'PSM'); // Cols 123-141 (row[122]-row[140])
+      fillPromoKhususBlock('MURAH', 141, 'MURAH SEJAGAT'); // Cols 142-160 (row[141]-row[159])
+      fillPromoKhususBlock('PWP_KHUSUS', 160, 'PWP'); // Cols 161-179 (row[160]-row[178])
+      fillPromoKhususBlock('JSM', 179, 'JSM'); // Cols 180-198 (row[179]-row[197])
+      fillPromoKhususBlock('GANTUNG', 198, 'GANTUNG'); // Cols 199-217 (row[198]-row[215])
 
-      // Cols 217-249 (row[216] to row[248])
+      // Col 217: FOTO PAJANGAN (row[216])
       row[216] = getVal('field_FOTO_PAJANGAN_OPTION'); // 217: FOTO PAJANGAN
 
       // Cols 218-223: Foto Before 1-6 (row[217]-row[222])
