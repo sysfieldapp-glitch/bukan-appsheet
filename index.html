@@ -2548,7 +2548,7 @@
         const sizeSpan = document.getElementById(`size_${targetHiddenId.replace('field_', '')}`);
 
         try {
-          const compressedBase64 = await compressImage(file, 700, 0.55);
+          const compressedBase64 = await compressImage(file, 850, 0.60);
           if (targetHiddenInput) targetHiddenInput.value = compressedBase64;
 
           if (previewDiv) {
