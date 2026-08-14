@@ -2302,17 +2302,18 @@
           })
         });
         const data = await res.json();
-        if (data.status === 'success' && Array.isArray(data.visited) && data.visited.length > 0) {
+        const visitedList = data.visited_stores || data.visited || [];
+        if (data.status === 'success' && Array.isArray(visitedList)) {
           // Merge hasil GAS dengan localStorage visited hari ini
           const key = getTodayKey();
           const localVisited = getVisitedStoresToday();
           let merged = [...localVisited];
-          data.visited.forEach(code => {
+          visitedList.forEach(code => {
             const c = String(code).trim().toUpperCase();
             if (c && !merged.includes(c)) merged.push(c);
           });
           localStorage.setItem(key, JSON.stringify(merged));
-          console.log(`[VisitedToday] Synced ${data.visited.length} visited stores from GAS (total local: ${merged.length})`);
+          console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
           // Re-render dashboard supaya badge SUDAH VISIT langsung update
           renderStoreCardsDashboard();
         }
