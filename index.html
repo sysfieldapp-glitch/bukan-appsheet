@@ -909,7 +909,7 @@
       document.getElementById('field_KODETOKO').value = store.kodeToko || '';
       document.getElementById('field_NAMATOKO').value = store.namaToko || '';
       if (store.account) document.getElementById('field_ACCOUNT').value = store.account;
-      if (store.tipeToko) document.getElementById('field_TIPETOKO').value = store.tipeToko;
+      document.getElementById('field_TIPETOKO').value = resolveStoreTipeToko(store);
       if (store.rute) document.getElementById('field_RUTE').value = store.rute;
 
       const activeTitle = document.getElementById('activeStoreTitle');
@@ -1288,6 +1288,31 @@
       return `${jam}:${menit}:${detik}`;
     }
 
+    // HELPER AUTO RESOLVE TIPE TOKO (Master CSV, Scraper JSON, or default 'Regular')
+    function resolveStoreTipeToko(store) {
+      if (!store) return 'Regular';
+      if (store.tipeToko && String(store.tipeToko).trim() !== '') {
+        return String(store.tipeToko).trim();
+      }
+      if (store.formatToko && String(store.formatToko).trim() !== '') {
+        return String(store.formatToko).trim();
+      }
+      if (store.format && String(store.format).trim() !== '') {
+        return String(store.format).trim();
+      }
+      const cleanCode = String(store.kodeToko || '').trim().toUpperCase();
+      if (cleanCode && cachedStoreIndexMap && cachedStoreIndexMap[cleanCode]) {
+        const regFile = cachedStoreIndexMap[cleanCode];
+        if (cachedRegionJsonData && cachedRegionJsonData[regFile]) {
+          const rawMatch = cachedRegionJsonData[regFile].find(s => String(s.store_code || '').trim().toUpperCase() === cleanCode);
+          if (rawMatch && rawMatch.tipe_toko && String(rawMatch.tipe_toko).trim() !== '') {
+            return String(rawMatch.tipe_toko).trim();
+          }
+        }
+      }
+      return 'Regular';
+    }
+
     // SELECT STORE AND SWITCH TO FORM VIEW PAGE
     function selectStoreAndOpenForm(selectedIndex) {
       const storeList = window.activeFilteredStores || masterTokoData;
@@ -1298,7 +1323,10 @@
       document.getElementById('field_KODETOKO').value = store.kodeToko || '';
       document.getElementById('field_NAMATOKO').value = store.namaToko || '';
       if (store.account) document.getElementById('field_ACCOUNT').value = store.account;
-      if (store.tipeToko) document.getElementById('field_TIPETOKO').value = store.tipeToko;
+      
+      const resolvedTipe = resolveStoreTipeToko(store);
+      document.getElementById('field_TIPETOKO').value = resolvedTipe;
+
       if (store.rute) document.getElementById('field_RUTE').value = store.rute;
       if (store.namaCrew && !document.getElementById('field_NAMACREW').value) {
         document.getElementById('field_NAMACREW').value = store.namaCrew;
@@ -1924,7 +1952,7 @@
         document.getElementById('field_KODETOKO').value = store.kodeToko || '';
         document.getElementById('field_NAMATOKO').value = store.namaToko || '';
         if (store.account) document.getElementById('field_ACCOUNT').value = store.account;
-        if (store.tipeToko) document.getElementById('field_TIPETOKO').value = store.tipeToko;
+        document.getElementById('field_TIPETOKO').value = resolveStoreTipeToko(store);
         if (store.rute) document.getElementById('field_RUTE').value = store.rute;
         if (store.namaCrew && !document.getElementById('field_NAMACREW').value) {
           document.getElementById('field_NAMACREW').value = store.namaCrew;
