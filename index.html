@@ -739,6 +739,9 @@
     lucide.createIcons();
 
     // GLOBAL CONFIG & STATE
+    const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/sysfieldapp-glitch/agscrapper/main/data/';
+    let cachedStoreIndexMap = null;
+    let cachedRegionJsonData = {};
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw9nMVLM-w2uywm17o-lHvoZm2gnhQvdJ9YVY74GECZazMLZPO2TEJ-8nMI9aPzyJS4/exec';
     const DEFAULT_SECRET_TOKEN = localStorage.getItem('GAS_SECRET_TOKEN') || 'VISIT_SECRET_KEY_2026';
     // Spreadsheet IDs per region untuk direct Google Sheets read (gviz/tq - no CORS)
@@ -749,26 +752,8 @@
     const MASTER_TOKO_SHEET_NAME = 'Master_Toko';
     let currentGpsCoords = { lat: null, lng: null, accuracy: null };
 
-    // SAMPLE MASTER TOKO (Matching Master_Toko sheet in Google Sheets screenshot)
-    let masterTokoData = JSON.parse(localStorage.getItem('MASTER_TOKO_DATA')) || [
-      { account: 'ALFAMART', kodeToko: '1VU3', namaToko: 'Veteran Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '13', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L040', namaToko: 'Patimura Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '13', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: '1VL8', namaToko: 'Purwo Sari', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '13', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: '1VM8', namaToko: 'Purwo Asri', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '13', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L289', namaToko: 'Dr. Soetomo Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '2', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: '1V81', namaToko: 'Dr. Soetomo 2 Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '2', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L028', namaToko: 'Imam Bonjol Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '2', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: '1V85', namaToko: 'Imam Bonjol 2 Metro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '2', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L291', namaToko: 'Diponegoro', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '1', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L023', namaToko: 'Sukarso', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '1', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L052', namaToko: 'Raden Intan', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '1', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L446', namaToko: 'Wolter Mongonsidi', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '1', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L054', namaToko: 'Kota Gajah', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '3', tipeToko: 'Regular' },
-      { account: 'ALFAMART', kodeToko: 'L082', namaToko: 'Kota Gajah 2', kodeCrew: 'RO033', namaCrew: 'AHMAD GHOZALI', rute: '3', tipeToko: 'Regular' },
-      // SAMPLE STORE FALLBACK UNTUK DALAM PULAU (ID CREW: 3.5623)
-      { account: 'ALFAMART', kodeToko: '1YAI', namaToko: 'Toko Dalam Pulau 1', kodeCrew: '3.5623', namaCrew: 'MDS DALAM PULAU', rute: '1', tipeToko: 'Regular' },
-      { account: 'INDOMARET', kodeToko: '1YAJ', namaToko: 'Toko Dalam Pulau 2', kodeCrew: '3.5623', namaCrew: 'MDS DALAM PULAU', rute: '1', tipeToko: 'Regular' }
-    ];
+    // MASTER TOKO DATA (Loaded from localStorage cache or synced live from Google Sheets)
+    let masterTokoData = JSON.parse(localStorage.getItem('MASTER_TOKO_DATA')) || [];
 
     // 16 Varian Promo Khusus List
     const VARIAN_PROMO_LIST = [
@@ -1143,9 +1128,12 @@
           const regFile = cachedStoreIndexMap[storeCode];
           if (cachedRegionJsonData[regFile]) {
             const rawMatch = cachedRegionJsonData[regFile].find(s => String(s.store_code || '').trim().toUpperCase() === storeCode);
-            if (rawMatch && rawMatch.tipe_toko && rawMatch.tipe_toko.trim() !== '') {
-              tipeTokoLabel = rawMatch.tipe_toko.trim().toUpperCase();
-              store.tipeToko = rawMatch.tipe_toko.trim();
+            if (rawMatch) {
+              const rawTipe = extractRawTipeToko(rawMatch);
+              if (rawTipe) {
+                tipeTokoLabel = rawTipe.toUpperCase();
+                store.tipeToko = rawTipe;
+              }
             }
           }
         }
@@ -1357,11 +1345,31 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // HELPER CONVERT WINDOW.MASTERPRODUCTSMAP TO ARRAY
+    function loadFallbackMasterProducts() {
+      const list = [];
+      if (window.masterProductsMap && Object.keys(window.masterProductsMap).length > 0) {
+        Object.keys(window.masterProductsMap).forEach(barcode => {
+          const p = window.masterProductsMap[barcode];
+          list.push({
+            barcode: barcode,
+            name: p.nama_barang || p.name || 'PRODUK',
+            normal: p.normal || p.harga || 0,
+            promo: p.promo || '',
+            stock: p.stock || 0,
+            jenis_promo: p.jenis_promo || '',
+            mulai_promo: p.mulai_promo || '',
+            akhir_promo: p.akhir_promo || ''
+          });
+        });
+      }
+      return list;
+    }
+
     // TAB 2: LOAD SCRAPER PRODUCTS MATCHED BY BARCODE & STORE CODE
     async function loadTab2ScraperProducts(storeCode) {
       if (!storeCode) return;
       const container = document.getElementById('productCardsContainer');
-      const countBadge = document.getElementById('txtScraperProductCount');
       if (!container) return;
 
       container.innerHTML = '<div class="text-center py-6 text-xs text-slate-500 font-bold">Memuat produk toko...</div>';
@@ -1369,9 +1377,26 @@
       try {
         const cleanCode = String(storeCode).trim().toUpperCase();
 
+        // 1. Fetch store_index.json if not cached in memory
+        if (!cachedStoreIndexMap) {
+          const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
+          if (resIndex.ok) {
+            cachedStoreIndexMap = await resIndex.json();
+          }
+        }
+
         let rawProducts = [];
         if (cachedStoreIndexMap && cachedStoreIndexMap[cleanCode]) {
           const regionFile = cachedStoreIndexMap[cleanCode];
+
+          // 2. Fetch region JSON if not cached in memory
+          if (!cachedRegionJsonData[regionFile]) {
+            const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(regionFile));
+            if (resRegion.ok) {
+              cachedRegionJsonData[regionFile] = await resRegion.json();
+            }
+          }
+
           if (cachedRegionJsonData[regionFile]) {
             const rawStore = cachedRegionJsonData[regionFile].find(s => String(s.store_code || '').trim().toUpperCase() === cleanCode);
             if (rawStore && Array.isArray(rawStore.products)) {
@@ -1380,12 +1405,17 @@
           }
         }
 
+        // 3. Fallback: If rawProducts is empty, load all master products!
+        if (!rawProducts || rawProducts.length === 0) {
+          rawProducts = loadFallbackMasterProducts();
+        }
+
         window.currentStoreScraperProducts = rawProducts;
         renderProductCardsList(rawProducts);
 
       } catch (err) {
         console.warn('Error loading Tab 2 products:', err);
-        container.innerHTML = '<div class="text-center py-6 text-xs text-red-500 font-bold">Gagal memuat produk toko</div>';
+        renderProductCardsList(loadFallbackMasterProducts());
       }
     }
 
@@ -1989,10 +2019,6 @@
     }
 
     // DYNAMIC GITHUB RAW GEOLOCATION & JITTER ENGINE
-    const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/yprtm-195/ag_scrapper/main/scrapper%20baru/data/';
-    let cachedStoreIndexMap = null;
-    let cachedRegionJsonData = {};
-
     async function getDynamicStoreLocationFromGithub(storeCode) {
       if (!storeCode) return null;
       const cleanCode = String(storeCode).trim().toUpperCase();
