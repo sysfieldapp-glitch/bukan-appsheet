@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>App Kunjungan Sales - Alternative Form</title>
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -1422,9 +1423,11 @@
       container.innerHTML = '<div class="text-center py-6 text-xs text-slate-500 font-bold">Memuat produk toko...</div>';
 
       try {
-        const cleanCode = String(storeCode).trim().toUpperCase();
+        const fullCode = String(storeCode).trim().toUpperCase();
+        // Ekstrak 4-karakter kode toko murni (misal: "1Y09-MAPANGET RAYA" -> "1Y09")
+        const code4Char = fullCode.split(/[-_\s\[]/)[0].trim();
 
-        // 1. Fetch store_index.json if not cached in memory
+        // 1. Fetch store_index.json jika belum di-cache di memori
         if (!cachedStoreIndexMap) {
           const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
           if (resIndex.ok) {
@@ -1433,28 +1436,36 @@
         }
 
         let rawProducts = [];
-        if (cachedStoreIndexMap && cachedStoreIndexMap[cleanCode]) {
-          const regionFile = cachedStoreIndexMap[cleanCode];
+        let matchedRegionFile = null;
+        if (cachedStoreIndexMap) {
+          matchedRegionFile = cachedStoreIndexMap[fullCode] || cachedStoreIndexMap[code4Char];
+        }
 
-          // 2. Fetch region JSON if not cached in memory
-          if (!cachedRegionJsonData[regionFile]) {
-            const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(regionFile));
+        if (matchedRegionFile) {
+          // 2. Fetch region JSON jika belum di-cache di memori
+          if (!cachedRegionJsonData[matchedRegionFile]) {
+            const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(matchedRegionFile));
             if (resRegion.ok) {
-              cachedRegionJsonData[regionFile] = await resRegion.json();
+              cachedRegionJsonData[matchedRegionFile] = await resRegion.json();
             }
           }
 
-          if (cachedRegionJsonData[regionFile]) {
-            const rawStore = cachedRegionJsonData[regionFile].find(s => String(s.store_code || '').trim().toUpperCase() === cleanCode);
+          if (cachedRegionJsonData[matchedRegionFile]) {
+            const rawStore = cachedRegionJsonData[matchedRegionFile].find(s => {
+              const sc = String(s.store_code || '').trim().toUpperCase();
+              return sc === fullCode || sc === code4Char;
+            });
             if (rawStore && Array.isArray(rawStore.products)) {
               rawProducts = rawStore.products;
+              console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
             }
           }
         }
 
-        // 3. Fallback: If rawProducts is empty, load all master products!
+        // 3. Fallback: Jika toko tidak ada di scraper, gunakan fallback master products
         if (!rawProducts || rawProducts.length === 0) {
           rawProducts = loadFallbackMasterProducts();
+          console.log(`[Tab2 Scraper] Store ${fullCode} fallback master products: ${rawProducts.length} items`);
         }
 
         // 4. Merge Live Master Promo (Jenis Promo, Mulai Promo, Akhir Promo) matched by Barcode!
@@ -1488,6 +1499,26 @@
       const str = String(dateStr).trim();
       if (str.length >= 10 && /^\d{4}-\d{2}-\d{2}/.test(str)) {
         return str.substring(0, 10);
+      }
+      if (str.includes('/')) {
+        const parts = str.split(' ')[0].split('/');
+        if (parts.length === 3) {
+          let day, month, year;
+          if (parseInt(parts[0]) > 12) {
+            day = parts[0].padStart(2, '0');
+            month = parts[1].padStart(2, '0');
+            year = parts[2];
+          } else if (parseInt(parts[1]) > 12) {
+            month = parts[0].padStart(2, '0');
+            day = parts[1].padStart(2, '0');
+            year = parts[2];
+          } else {
+            day = parts[0].padStart(2, '0');
+            month = parts[1].padStart(2, '0');
+            year = parts[2];
+          }
+          return `${year}-${month}-${day}`;
+        }
       }
       try {
         const d = new Date(str);
@@ -1532,10 +1563,16 @@
     function renderProductCardsList(customProducts = null) {
       const container = document.getElementById('productCardsContainer');
       const countBadge = document.getElementById('txtScraperProductCount');
-      if (!container) return;
-
       const products = customProducts !== null ? customProducts : (window.currentStoreScraperProducts || []);
-      if (countBadge) countBadge.textContent = `${products.length} Produk Toko`;
+
+      if (countBadge) {
+        const withStock = products.filter(p => Number(p.stock || 0) > 0).length;
+        if (withStock > 0 && withStock !== products.length) {
+          countBadge.innerHTML = `<span class="font-extrabold text-blue-700">${products.length} Produk Raw</span> <span class="text-slate-500 font-normal">(${withStock} Ber-Stok)</span>`;
+        } else {
+          countBadge.textContent = `${products.length} Produk (Raw Alfagift)`;
+        }
+      }
 
       if (products.length === 0) {
         container.innerHTML = `
@@ -1557,7 +1594,7 @@
         const card = document.createElement('div');
         card.className = 'bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-4 space-y-3 shadow-sm transition-all';
 
-        const isPromoActive = Number(p.promo || 0) > 0;
+        const isPromoActive = (Number(p.promo || 0) > 0) || Boolean(p.jenis_promo && p.jenis_promo.trim() !== '') || Boolean(p.mulai_promo && p.mulai_promo.trim() !== '');
         const osa = p.osa || 'TIDAK';
         const exp1b = p.expired_1bulan || 'TIDAK ADA';
         const expDisp = p.expired_display || 'TIDAK ADA';
@@ -1593,11 +1630,11 @@
             </div>
           </div>
 
-          <!-- PROMO PERIOD / TYPE DETAILS (LANGSUNG MUNCUL JIKA PROMO > 0) -->
+          <!-- PROMO PERIOD / TYPE DETAILS (AUTOMATIS MUNCUL BILA JENIS/PERIODE PROMO ADA ATAU PROMO > 0) -->
           <div id="inlinePromoBlock_${barcodeStr}" class="${isPromoActive ? '' : 'hidden'} bg-amber-50/90 p-3 rounded-xl border border-amber-300 space-y-2.5 text-xs">
             <div class="flex items-center space-x-1.5 text-amber-900 font-extrabold text-[11px]">
               <i data-lucide="tag" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span>Detail Promo Aktif (> Rp 0)</span>
+              <span>Detail Promo Aktif (${p.jenis_promo || 'PROMO'})</span>
             </div>
 
             <div>
@@ -2291,31 +2328,25 @@
       if (!gasUrl || !secretToken) return;
 
       try {
-        const res = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'getVisitedToday',
-            secret_token: secretToken,
-            region: currentRegion,
-            id_crew: idCrew
-          })
-        });
-        const data = await res.json();
-        const visitedList = data.visited_stores || data.visited || [];
-        if (data.status === 'success' && Array.isArray(visitedList)) {
-          // Merge hasil GAS dengan localStorage visited hari ini
-          const key = getTodayKey();
-          const localVisited = getVisitedStoresToday();
-          let merged = [...localVisited];
-          visitedList.forEach(code => {
-            const c = String(code).trim().toUpperCase();
-            if (c && !merged.includes(c)) merged.push(c);
-          });
-          localStorage.setItem(key, JSON.stringify(merged));
-          console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
-          // Re-render dashboard supaya badge SUDAH VISIT langsung update
-          renderStoreCardsDashboard();
+        const fetchUrl = `${gasUrl}?action=getVisitedToday&secret_token=${encodeURIComponent(secretToken)}&region=${encodeURIComponent(currentRegion)}&id_crew=${encodeURIComponent(idCrew)}&t=${Date.now()}`;
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const data = await res.json();
+          const visitedList = data.visited_stores || data.visited || [];
+          if (data.status === 'success' && Array.isArray(visitedList)) {
+            // Merge hasil GAS dengan localStorage visited hari ini
+            const key = getTodayKey();
+            const localVisited = getVisitedStoresToday();
+            let merged = [...localVisited];
+            visitedList.forEach(code => {
+              const c = String(code).trim().toUpperCase();
+              if (c && !merged.includes(c)) merged.push(c);
+            });
+            localStorage.setItem(key, JSON.stringify(merged));
+            console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
+            // Re-render dashboard supaya badge SUDAH VISIT langsung update
+            renderStoreCardsDashboard();
+          }
         }
       } catch (e) {
         console.warn('[VisitedToday] Gagal fetch dari GAS, pakai cache lokal saja.', e);
