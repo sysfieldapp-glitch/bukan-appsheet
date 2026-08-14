@@ -1353,7 +1353,12 @@
     function selectStoreAndOpenForm(selectedIndex) {
       const storeList = window.activeFilteredStores || masterTokoData;
       const store = storeList[selectedIndex];
-      if (!store) return;
+      // Jika membuka toko baru (bukan toko yang sama), bersihkan sisa foto & form dari toko sebelumnya!
+      const currentCode = (document.getElementById('field_KODETOKO').value || '').trim().toUpperCase();
+      const targetCode = String(store.kodeToko || '').trim().toUpperCase();
+      if (currentCode !== targetCode) {
+        resetAllFormInputsAndPhotos();
+      }
 
       // Auto fill form fields
       document.getElementById('field_KODETOKO').value = store.kodeToko || '';
@@ -2555,7 +2560,27 @@
 
           if (previewDiv) {
             const img = previewDiv.querySelector('img');
-            if (img) img.src = compressedBase64;
+            if (img) {
+              img.src = compressedBase64;
+              img.className = 'w-36 h-36 object-cover rounded-xl border border-slate-300 shadow-sm cursor-pointer hover:opacity-90 transition-opacity';
+              img.title = 'Klik untuk memperbesar foto';
+              img.onclick = () => openPhotoModal(compressedBase64, targetHiddenId);
+            }
+
+            let btnHapus = previewDiv.querySelector('.btn-hapus-foto');
+            if (!btnHapus) {
+              btnHapus = document.createElement('button');
+              btnHapus.type = 'button';
+              btnHapus.className = 'btn-hapus-foto mt-2 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-lg font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all';
+              btnHapus.innerHTML = `<i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Hapus Foto</span>`;
+              btnHapus.onclick = (event) => {
+                event.stopPropagation();
+                deletePhoto(targetHiddenId);
+              };
+              previewDiv.appendChild(btnHapus);
+              if (window.lucide) window.lucide.createIcons();
+            }
+
             previewDiv.classList.remove('hidden');
           }
 
@@ -2568,6 +2593,105 @@
           alert('Gagal memproses gambar: ' + err.message);
         }
       }
+
+    // HELPER DELETE UPLOADED PHOTO
+    function deletePhoto(targetHiddenId) {
+      const hiddenInput = document.getElementById(targetHiddenId);
+      if (hiddenInput) hiddenInput.value = '';
+
+      const inputId = `input_${targetHiddenId.replace('field_', '')}`;
+      const fileInput = document.getElementById(inputId);
+      if (fileInput) fileInput.value = '';
+
+      const previewDiv = document.getElementById(`preview_${targetHiddenId.replace('field_', '')}`);
+      if (previewDiv) {
+        previewDiv.classList.add('hidden');
+        const img = previewDiv.querySelector('img');
+        if (img) img.src = '';
+        const btnHapus = previewDiv.querySelector('.btn-hapus-foto');
+        if (btnHapus) btnHapus.remove();
+      }
+
+      const sizeSpan = document.getElementById(`size_${targetHiddenId.replace('field_', '')}`);
+      if (sizeSpan) {
+        sizeSpan.textContent = '✕ Foto telah dihapus';
+        sizeSpan.className = 'text-xs font-mono text-rose-500 font-bold';
+      }
+
+      saveVisitDraftState();
+    }
+
+    // HELPER FULL PHOTO ENLARGE MODAL
+    function openPhotoModal(imageSrc, targetTitle = 'Preview Foto') {
+      let modal = document.getElementById('imageEnlargeModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'imageEnlargeModal';
+        modal.className = 'fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all';
+        modal.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-lg w-full p-4 space-y-3 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span id="modalPhotoTitle" class="font-bold text-xs text-slate-800 uppercase">PREVIEW FOTO</span>
+              <button type="button" onclick="closePhotoModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <div class="flex justify-center bg-slate-950/90 rounded-xl p-2 overflow-hidden max-h-[75vh]">
+              <img id="modalPhotoImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md">
+            </div>
+            <div class="flex justify-end pt-1">
+              <button type="button" onclick="closePhotoModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm">Tutup Preview</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      const imgEl = document.getElementById('modalPhotoImage');
+      const titleEl = document.getElementById('modalPhotoTitle');
+      if (imgEl) imgEl.src = imageSrc;
+      if (titleEl) titleEl.textContent = `PREVIEW: ${targetTitle.replace('field_', '').replace(/_/g, ' ')}`;
+      modal.classList.remove('hidden');
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('imageEnlargeModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // HELPER TOTAL RESET FORM & PHOTOS WHEN SWITCHING STORES
+    function resetAllFormInputsAndPhotos() {
+      const photoInputs = document.querySelectorAll('input[type="hidden"][id^="field_FOTO"], input[type="hidden"][id^="field_RAK_REG"]');
+      photoInputs.forEach(el => { el.value = ''; });
+
+      const previewDivs = document.querySelectorAll('[id^="preview_"]');
+      previewDivs.forEach(div => {
+        div.classList.add('hidden');
+        const img = div.querySelector('img');
+        if (img) img.src = '';
+        const btnHapus = div.querySelector('.btn-hapus-foto');
+        if (btnHapus) btnHapus.remove();
+      });
+
+      const sizeSpans = document.querySelectorAll('[id^="size_"]');
+      sizeSpans.forEach(span => {
+        span.textContent = '';
+        span.className = 'text-xs font-mono text-slate-500 font-medium';
+      });
+
+      const formInputs = document.querySelectorAll('#viewFormInput input[type="text"], #viewFormInput input[type="number"], #viewFormInput select, #viewFormInput textarea');
+      formInputs.forEach(el => {
+        if (el.id !== 'field_IDCREW' && el.id !== 'field_NAMACREW' && el.id !== 'field_HARI' && el.id !== 'field_WEEK') {
+          if (el.tagName === 'SELECT') el.selectedIndex = 0;
+          else if (el.type === 'checkbox') el.checked = false;
+          else el.value = '';
+        }
+      });
+
+      window.currentStoreScraperProducts = [];
+      clearVisitDraftState();
+    }
     });
 
     function compressImage(file, maxDimension, quality) {
