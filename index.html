@@ -742,6 +742,42 @@
     const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/sysfieldapp-glitch/agscrapper/main/data/';
     let cachedStoreIndexMap = null;
     let cachedRegionJsonData = {};
+    const PRODMAST_PROMO_URL = 'https://docs.google.com/spreadsheets/d/1FD2RN9XjxDk0cuhYTWIYhtdgob_GUx9EdGCtF1MVUbI/gviz/tq?tqx=out:csv&sheet=promo';
+    let cachedMasterPromoMap = null;
+
+    async function fetchMasterPromoLive() {
+      if (cachedMasterPromoMap) return cachedMasterPromoMap;
+      cachedMasterPromoMap = {};
+      try {
+        const res = await fetch(PRODMAST_PROMO_URL);
+        if (res.ok) {
+          const csvText = await res.text();
+          const lines = csvText.split(/\r?\n/);
+          lines.forEach((line, idx) => {
+            if (idx === 0) return;
+            const matches = line.match(/(?:^|,)("(?:[^"]|"")*"|[^,]*)/g);
+            if (matches && matches.length >= 5) {
+              const clean = (str) => (str || '').replace(/^,?"?|"$/g, '').replace(/""/g, '"').trim();
+              const barcode = clean(matches[0]);
+              const jenisPromo = clean(matches[2]);
+              const mulaiPromo = clean(matches[3]);
+              const akhirPromo = clean(matches[4]);
+              if (barcode) {
+                cachedMasterPromoMap[barcode] = {
+                  jenis_promo: jenisPromo,
+                  mulai_promo: mulaiPromo,
+                  akhir_promo: akhirPromo
+                };
+              }
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Master Promo live fetch error:', err);
+      }
+      return cachedMasterPromoMap;
+    }
+
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw9nMVLM-w2uywm17o-lHvoZm2gnhQvdJ9YVY74GECZazMLZPO2TEJ-8nMI9aPzyJS4/exec';
     const DEFAULT_SECRET_TOKEN = localStorage.getItem('GAS_SECRET_TOKEN') || 'VISIT_SECRET_KEY_2026';
     // Spreadsheet IDs per region untuk direct Google Sheets read (gviz/tq - no CORS)
@@ -1409,6 +1445,22 @@
         if (!rawProducts || rawProducts.length === 0) {
           rawProducts = loadFallbackMasterProducts();
         }
+
+        // 4. Merge Live Master Promo (Jenis Promo, Mulai Promo, Akhir Promo) matched by Barcode!
+        try {
+          const promoMap = await fetchMasterPromoLive();
+          if (promoMap && rawProducts.length > 0) {
+            rawProducts.forEach(p => {
+              const bCode = String(p.barcode || '').trim();
+              if (promoMap[bCode]) {
+                const m = promoMap[bCode];
+                if (m.jenis_promo) p.jenis_promo = m.jenis_promo;
+                if (m.mulai_promo) p.mulai_promo = m.mulai_promo;
+                if (m.akhir_promo) p.akhir_promo = m.akhir_promo;
+              }
+            });
+          }
+        } catch (ePromo) {}
 
         window.currentStoreScraperProducts = rawProducts;
         renderProductCardsList(rawProducts);
