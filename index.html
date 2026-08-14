@@ -958,7 +958,48 @@
         const savedForm = JSON.parse(localStorage.getItem(DRAFT_KEY_FORM) || '{}');
         Object.keys(savedForm).forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.value = savedForm[id];
+          if (el) {
+            el.value = savedForm[id];
+
+            // Pemulihan Foto Draft (Restore Thumbnail, Size Badge & Tombol Hapus Foto)
+            if ((id.startsWith('field_FOTO') || id.startsWith('field_RAK_REG')) && typeof savedForm[id] === 'string' && savedForm[id].startsWith('data:image/')) {
+              const val = savedForm[id];
+              const targetId = id.replace('field_', '');
+              const previewDiv = document.getElementById(`preview_${targetId}`);
+              const sizeSpan = document.getElementById(`size_${targetId}`);
+
+              if (previewDiv) {
+                const img = previewDiv.querySelector('img');
+                if (img) {
+                  img.src = val;
+                  img.className = 'w-36 h-36 object-cover rounded-xl border border-slate-300 shadow-sm cursor-pointer hover:opacity-90 transition-opacity';
+                  img.title = 'Klik untuk memperbesar foto';
+                  img.onclick = () => openPhotoModal(val, id);
+                }
+
+                let btnHapus = previewDiv.querySelector('.btn-hapus-foto');
+                if (!btnHapus) {
+                  btnHapus = document.createElement('button');
+                  btnHapus.type = 'button';
+                  btnHapus.className = 'btn-hapus-foto mt-2 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-lg font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all';
+                  btnHapus.innerHTML = `<i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Hapus Foto</span>`;
+                  btnHapus.onclick = (event) => {
+                    event.stopPropagation();
+                    deletePhoto(id);
+                  };
+                  previewDiv.appendChild(btnHapus);
+                  if (window.lucide) window.lucide.createIcons();
+                }
+                previewDiv.classList.remove('hidden');
+              }
+
+              if (sizeSpan) {
+                const kb = Math.round((val.length * (3/4)) / 1024);
+                sizeSpan.textContent = `✓ Foto Terpulihkan Draft (${kb} KB)`;
+                sizeSpan.className = 'text-xs font-mono text-emerald-600 font-bold';
+              }
+            }
+          }
         });
       } catch (e) {}
 
