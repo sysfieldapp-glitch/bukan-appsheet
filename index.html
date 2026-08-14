@@ -1929,7 +1929,6 @@
     function populateMasterTokoDropdown() {
       renderStoreCardsDashboard();
     }
-
     // LISTEN TO ID CREW INPUT CHANGE FOR INSTANT AUTO LOOKUP
     document.getElementById('field_IDCREW').addEventListener('input', (e) => {
       const id = e.target.value.trim();
@@ -1937,6 +1936,32 @@
         populateMasterTokoDropdown();
       }
     });
+
+    // HELPER AUTO EXTRACT RAW TIPE TOKO FROM SCRAPER OBJECT
+    function extractRawTipeToko(match) {
+      if (!match) return '';
+      const val = match.tipe_toko || match.tipeToko || match.format_toko || match.formatToko || match.format || match.tipe || match.tipe_outlet || match.jenis_toko || match.store_type || match.type || match.class || match.grade || '';
+      return String(val).trim();
+    }
+
+    // HELPER AUTO RESOLVE TIPE TOKO (Master CSV or Scraper JSON)
+    function resolveStoreTipeToko(store) {
+      if (!store) return '';
+      if (store.tipeToko && String(store.tipeToko).trim() !== '') return String(store.tipeToko).trim();
+      if (store.formatToko && String(store.formatToko).trim() !== '') return String(store.formatToko).trim();
+      if (store.format && String(store.format).trim() !== '') return String(store.format).trim();
+
+      const cleanCode = String(store.kodeToko || '').trim().toUpperCase();
+      if (cleanCode && cachedStoreIndexMap && cachedStoreIndexMap[cleanCode]) {
+        const regFile = cachedStoreIndexMap[cleanCode];
+        if (cachedRegionJsonData && cachedRegionJsonData[regFile]) {
+          const rawMatch = cachedRegionJsonData[regFile].find(s => String(s.store_code || '').trim().toUpperCase() === cleanCode);
+          const rawTipe = extractRawTipeToko(rawMatch);
+          if (rawTipe) return rawTipe;
+        }
+      }
+      return store.tipeToko || store.formatToko || store.format || '';
+    }
 
     const selectElem = document.getElementById('selectMasterToko');
     if (selectElem) {
@@ -2001,7 +2026,7 @@
               lat: match.latitude ? parseFloat(match.latitude) : -5.107091,
               lng: match.longitude ? parseFloat(match.longitude) : 105.293535,
               name: match.store_name || '',
-              tipeToko: (match.tipe_toko && match.tipe_toko.trim() !== '') ? match.tipe_toko.trim() : 'Regular'
+              tipeToko: extractRawTipeToko(match)
             };
           }
         }
@@ -2034,15 +2059,15 @@
               lLng = parseFloat(parts[1]);
             }
             if (lLat && lLng) {
-              baseCoords = { lat: lLat, lng: lLng, tipeToko: localStore.tipeToko || 'Regular' };
+              baseCoords = { lat: lLat, lng: lLng, tipeToko: localStore.tipeToko || '' };
             }
           }
         }
 
-        // Auto fill raw tipe_toko if present
-        if (baseCoords && baseCoords.tipeToko) {
+        // Auto fill raw tipe_toko ONLY if non-empty
+        if (baseCoords && baseCoords.tipeToko && baseCoords.tipeToko.trim() !== '') {
           const fieldTipe = document.getElementById('field_TIPETOKO');
-          if (fieldTipe) fieldTipe.value = baseCoords.tipeToko;
+          if (fieldTipe) fieldTipe.value = baseCoords.tipeToko.trim();
         }
 
         // Fallback coordinates (Manado center fallback: 1.495838, 124.841200)
