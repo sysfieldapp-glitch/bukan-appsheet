@@ -2870,37 +2870,37 @@
         row[startIdx + 18] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_2`) : '';
       };
 
-      // Fill 5 Promo Khusus Blocks (19 Cols each = 95 Cols total)
+      // Fill 5 Promo Khusus Blocks (PSM 19 cols, MURAH/PWP/JSM/GANTUNG 20 cols each)
       fillPromoKhususBlock('PSM', 123, 'PSM'); // Cols 124-142 (row[123]-row[141], index 141 = EL = FOTO_PSM 2)
-      fillPromoKhususBlock('MURAH', 142, 'MURAH SEJAGAT'); // Cols 143-161 (row[142]-row[160], index 142 = EM = PROMO_PALING MURAH SEJAGAT)
-      fillPromoKhususBlock('PWP_KHUSUS', 161, 'PWP'); // Cols 162-180 (row[161]-row[179])
-      fillPromoKhususBlock('JSM', 180, 'JSM'); // Cols 181-199 (row[180]-row[198])
-      fillPromoKhususBlock('GANTUNG', 199, 'GANTUNG'); // Cols 200-218 (row[199]-row[217])
+      fillPromoKhususBlock('MURAH', 142, 'MURAH SEJAGAT'); // Cols 143-162 (row[142]-row[161], index 160 = FE = FOTO_MURAH 1, index 161 = FF = FOTO_MURAH 2)
+      fillPromoKhususBlock('PWP_KHUSUS', 162, 'PWP'); // Cols 163-182 (row[162]-row[181], index 162 = FG = PROMO_PWP)
+      fillPromoKhususBlock('JSM', 182, 'JSM'); // Cols 183-202 (row[182]-row[201])
+      fillPromoKhususBlock('GANTUNG', 202, 'GANTUNG'); // Cols 203-222 (row[202]-row[221])
 
-      // Col 219: FOTO PAJANGAN (row[218])
-      row[218] = getVal('field_FOTO_PAJANGAN_OPTION'); // FOTO PAJANGAN
+      // Col 223: FOTO PAJANGAN (row[222])
+      row[222] = getVal('field_FOTO_PAJANGAN_OPTION'); // FOTO PAJANGAN
 
-      // Cols 220-225: Foto Before 1-6 (row[219]-row[224])
+      // Cols 224-229: Foto Before 1-6 (row[223]-row[228])
       for (let i = 1; i <= 6; i++) {
-        row[218 + i] = getVal(`field_FOTO_BEFORE_${i}`);
+        row[222 + i] = getVal(`field_FOTO_BEFORE_${i}`);
       }
 
-      // Cols 226-231: Foto After 1-6 (row[225]-row[230])
+      // Cols 230-235: Foto After 1-6 (row[229]-row[234])
       for (let i = 1; i <= 6; i++) {
-        row[224 + i] = getVal(`field_FOTO_AFTER_${i}`);
+        row[228 + i] = getVal(`field_FOTO_AFTER_${i}`);
       }
 
-      // Col 232: FOTO PAJANGAN HYSU (row[231])
-      row[231] = getVal('field_FOTO_HYSU');
+      // Col 236: FOTO PAJANGAN HYSU (row[235])
+      row[235] = getVal('field_FOTO_HYSU');
 
-      // Cols 233-247: Foto Rak Reguler 1-15 (row[232]-row[246])
+      // Cols 237-251: Foto Rak Reguler 1-15 (row[236]-row[250])
       for (let i = 1; i <= 15; i++) {
-        row[231 + i] = getVal(`field_RAK_REG_${i}`) || getVal(`field_FOTO_RAK_REG_${i}`);
+        row[235 + i] = getVal(`field_RAK_REG_${i}`) || getVal(`field_FOTO_RAK_REG_${i}`);
       }
 
-      // Cols 248-251: Foto Extra Display 1-4 (row[247]-row[250])
+      // Cols 252-255: Foto Extra Display 1-4 (row[251]-row[254])
       for (let i = 1; i <= 4; i++) {
-        row[246 + i] = getVal(`field_FOTO_EXTRA_${i}`);
+        row[250 + i] = getVal(`field_FOTO_EXTRA_${i}`);
       }
 
       return row;
