@@ -1390,6 +1390,40 @@
       return 'Regular';
     }
 
+    // HELPER TOTAL RESET FORM & PHOTOS WHEN SWITCHING STORES (Global Top-Level)
+    function resetAllFormInputsAndPhotos() {
+      const photoInputs = document.querySelectorAll('input[type="hidden"][id^="field_FOTO"], input[type="hidden"][id^="field_RAK_REG"]');
+      photoInputs.forEach(el => { el.value = ''; });
+
+      const previewDivs = document.querySelectorAll('[id^="preview_"]');
+      previewDivs.forEach(div => {
+        div.classList.add('hidden');
+        const img = div.querySelector('img');
+        if (img) img.src = '';
+        const btnHapus = div.querySelector('.btn-hapus-foto');
+        if (btnHapus) btnHapus.remove();
+      });
+
+      const sizeSpans = document.querySelectorAll('[id^="size_"]');
+      sizeSpans.forEach(span => {
+        span.textContent = '';
+        span.className = 'text-xs font-mono text-slate-500 font-medium';
+      });
+
+      const formInputs = document.querySelectorAll('#viewFormInput input[type="text"], #viewFormInput input[type="number"], #viewFormInput select, #viewFormInput textarea');
+      formInputs.forEach(el => {
+        if (el.id !== 'field_IDCREW' && el.id !== 'field_NAMACREW' && el.id !== 'field_HARI' && el.id !== 'field_WEEK') {
+          if (el.tagName === 'SELECT') el.selectedIndex = 0;
+          else if (el.type === 'checkbox') el.checked = false;
+          else el.value = '';
+        }
+      });
+
+      window.currentStoreScraperProducts = [];
+      if (typeof clearVisitDraftState === 'function') clearVisitDraftState();
+    }
+    window.resetAllFormInputsAndPhotos = resetAllFormInputsAndPhotos;
+
     // SELECT STORE AND SWITCH TO FORM VIEW PAGE
     function selectStoreAndOpenForm(selectedIndex) {
       const storeList = window.activeFilteredStores || masterTokoData;
