@@ -3105,8 +3105,15 @@
         const selectedBarcode = getVal('selectDetailProduct');
         const isActiveProduct = (selectedBarcode && String(selectedBarcode).trim() === barcodeStr);
 
-        let normalPrice = p.normal || '';
-        let promoPrice = p.promo || '';
+        // Read price directly from card HTML inputs or in-memory product object!
+        let normalPrice = p.normal || p.harga_normal || p.harga || p.price || '';
+        let promoPrice = p.promo || p.harga_promo || '';
+
+        const cardNormalEl = document.querySelector(`input[data-price-type="normal"][data-barcode="${barcodeStr}"]`);
+        const cardPromoEl = document.querySelector(`input[data-price-type="promo"][data-barcode="${barcodeStr}"]`);
+        if (cardNormalEl && cardNormalEl.value !== '') normalPrice = cardNormalEl.value;
+        if (cardPromoEl && cardPromoEl.value !== '') promoPrice = cardPromoEl.value;
+
         let osaStatus = 'TIDAK';
         let qtyOsa = '';
         let qtySoh = p.stock || '';
@@ -3139,7 +3146,7 @@
 
         // Pastikan jika harga promo adalah 0, '0', null, atau kosong -> dikirim sebagai murni BLANK ""
         const cleanPromoPrice = (promoPrice && parseFloat(promoPrice) > 0) ? String(promoPrice) : '';
-        const cleanNormalPrice = (normalPrice && parseFloat(normalPrice) > 0) ? String(normalPrice) : '';
+        const cleanNormalPrice = (normalPrice && parseFloat(normalPrice) > 0) ? String(normalPrice) : (p.normal || p.harga_normal || p.harga || p.price || '');
 
         // Helper merapikan tanggal promo (Mengubah 2026-07-31T16:00:00.000Z atau YYYY-MM-DD jadi DD/MM/YYYY)
         const cleanPromoDate = (rawD) => {
