@@ -3272,14 +3272,37 @@
         }
       } catch (wlErr) {}
 
-      try {
-        const response = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
+      let response = null;
+      let lastNetworkErr = null;
 
-        const result = await response.json();
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (attempt > 1) {
+            statusMsg.textContent = `Sinyal HP/Jaringan terputus. Mencoba menghubungkan kembali (Percobaan ${attempt}/3)...`;
+            await new Promise(res => setTimeout(res, 2000));
+          }
+
+          response = await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+
+          if (response && response.ok) {
+            lastNetworkErr = null;
+            break;
+          }
+        } catch (netErr) {
+          lastNetworkErr = netErr;
+          console.warn(`Submit attempt ${attempt} failed:`, netErr);
+        }
+      }
+
+      if (!response && lastNetworkErr) {
+        throw lastNetworkErr;
+      }
+
+      const result = await response.json();
 
         statusSpinner.classList.add('hidden');
         if (result.status === 'success' || result.result === 'success') {
