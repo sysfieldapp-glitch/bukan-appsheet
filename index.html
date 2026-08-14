@@ -2635,8 +2635,8 @@
         }
       }
 
-    // HELPER DELETE UPLOADED PHOTO
-    function deletePhoto(targetHiddenId) {
+    // HELPER DELETE UPLOADED PHOTO (Globally Accessible)
+    window.deletePhoto = function(targetHiddenId) {
       const hiddenInput = document.getElementById(targetHiddenId);
       if (hiddenInput) hiddenInput.value = '';
 
@@ -2660,10 +2660,10 @@
       }
 
       saveVisitDraftState();
-    }
+    };
 
-    // HELPER FULL PHOTO ENLARGE MODAL
-    function openPhotoModal(imageSrc, targetTitle = 'Preview Foto') {
+    // HELPER FULL PHOTO ENLARGE MODAL (Globally Accessible)
+    window.openPhotoModal = function(imageSrc, targetTitle = 'Preview Foto') {
       let modal = document.getElementById('imageEnlargeModal');
       if (!modal) {
         modal = document.createElement('div');
@@ -2694,15 +2694,15 @@
       if (imgEl) imgEl.src = imageSrc;
       if (titleEl) titleEl.textContent = `PREVIEW: ${targetTitle.replace('field_', '').replace(/_/g, ' ')}`;
       modal.classList.remove('hidden');
-    }
+    };
 
-    function closePhotoModal() {
+    window.closePhotoModal = function() {
       const modal = document.getElementById('imageEnlargeModal');
       if (modal) modal.classList.add('hidden');
-    }
+    };
 
-    // HELPER TOTAL RESET FORM & PHOTOS WHEN SWITCHING STORES
-    function resetAllFormInputsAndPhotos() {
+    // HELPER TOTAL RESET FORM & PHOTOS WHEN SWITCHING STORES (Globally Accessible)
+    window.resetAllFormInputsAndPhotos = function() {
       const photoInputs = document.querySelectorAll('input[type="hidden"][id^="field_FOTO"], input[type="hidden"][id^="field_RAK_REG"]');
       photoInputs.forEach(el => { el.value = ''; });
 
@@ -2732,7 +2732,7 @@
 
       window.currentStoreScraperProducts = [];
       clearVisitDraftState();
-    }
+    };
     });
 
     function compressImage(file, maxDimension, quality) {
