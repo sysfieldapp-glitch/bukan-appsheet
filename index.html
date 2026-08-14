@@ -2346,11 +2346,13 @@
             console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
             // Re-render dashboard supaya badge SUDAH VISIT langsung update
             renderStoreCardsDashboard();
+            return visitedList;
           }
         }
       } catch (e) {
         console.warn('[VisitedToday] Gagal fetch dari GAS, pakai cache lokal saja.', e);
       }
+      return [];
     }
 
     // SYNC MASTER TOKO FROM GOOGLE SHEETS DIRECT
