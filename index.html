@@ -706,6 +706,17 @@
         <p id="statusMessage" class="text-xs text-slate-600">Mohon tunggu sebentar, data dan foto sedang dikompres & diunggah ke Google Sheets.</p>
       </div>
 
+      <!-- LIVE UPLOAD PROGRESS BAR -->
+      <div id="blockUploadProgress" class="space-y-1.5 pt-1">
+        <div class="flex justify-between items-center text-[11px] font-bold text-slate-600">
+          <span id="txtProgressStep">Langkah 1/4: Menyiapkan Payload</span>
+          <span id="txtProgressPercent" class="font-mono text-blue-600 font-bold">15%</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200 shadow-inner">
+          <div id="barUploadProgress" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 15%"></div>
+        </div>
+      </div>
+
       <!-- ERROR DIAGNOSTIC BOX & COPY BUTTON (HIDDEN BY DEFAULT) -->
       <div id="blockErrorDiagnostic" class="hidden space-y-2 text-left pt-2 border-t border-rose-100">
         <label class="block text-[11px] font-bold text-rose-800">Detail Error Diagnostic Log:</label>
@@ -2505,7 +2516,7 @@
         const sizeSpan = document.getElementById(`size_${targetHiddenId.replace('field_', '')}`);
 
         try {
-          const compressedBase64 = await compressImage(file, 1024, 0.7);
+          const compressedBase64 = await compressImage(file, 900, 0.65);
           if (targetHiddenInput) targetHiddenInput.value = compressedBase64;
 
           if (previewDiv) {
@@ -3242,6 +3253,22 @@
       const blockDiag = document.getElementById('blockErrorDiagnostic');
       const txtDiagLog = document.getElementById('txtErrorDiagnosticLog');
 
+      function updateUploadProgress(percent, stepTitle, stepMsg) {
+        const txtStep = document.getElementById('txtProgressStep');
+        const txtPercent = document.getElementById('txtProgressPercent');
+        const barProgress = document.getElementById('barUploadProgress');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMsg = document.getElementById('statusMessage');
+        const blockProgress = document.getElementById('blockUploadProgress');
+
+        if (blockProgress) blockProgress.classList.remove('hidden');
+        if (txtStep) txtStep.textContent = stepTitle;
+        if (txtPercent) txtPercent.textContent = `${percent}%`;
+        if (barProgress) barProgress.style.width = `${percent}%`;
+        if (statusTitle && stepTitle) statusTitle.textContent = stepTitle;
+        if (statusMsg && stepMsg) statusMsg.textContent = stepMsg;
+      }
+
       modalStatus.classList.remove('hidden');
       statusSpinner.classList.remove('hidden');
       iconSuccess.classList.add('hidden');
@@ -3249,8 +3276,7 @@
       btnCloseStatus.classList.add('hidden');
       if (blockDiag) blockDiag.classList.add('hidden');
 
-      statusTitle.textContent = 'Mengirim Data Kunjungan...';
-      statusMsg.textContent = `Mengirim atas nama ID ${idCrew} (${namaCrew || 'Crew'}). Data dan foto sedang diunggah ke Google Sheets.`;
+      updateUploadProgress(15, 'Langkah 1/4: Menyiapkan Payload', 'Mengompres foto & menyusun 244 kolom matrix...');
 
       const rowMatrix = build244MatrixPayload();
       const rowDetailList = buildAllDetailMatrixPayloads();
@@ -3262,6 +3288,8 @@
         row_data: rowMatrix,
         row_detail_list: rowDetailList
       };
+
+      updateUploadProgress(35, 'Langkah 2/4: Mengirim Data', `Mengirim atas nama ID ${idCrew} (${namaCrew || 'Crew'}). Mentransmisikan data & foto ke Google Sheets...`);
 
       // Screen Wake Lock Handler to prevent HP screen timeout during upload
       let uploadWakeLock = null;
@@ -3279,8 +3307,10 @@
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             if (attempt > 1) {
-              statusMsg.textContent = `Sinyal HP/Jaringan terputus. Mencoba menghubungkan kembali (Percobaan ${attempt}/3)...`;
+              updateUploadProgress(40 + (attempt * 10), `Mencoba Menghubungkan (${attempt}/3)`, 'Sinyal HP terputus sekejap. Menghubungkan ulang ke server...');
               await new Promise(res => setTimeout(res, 2000));
+            } else {
+              updateUploadProgress(70, 'Langkah 3/4: Memproses Foto & Drive', 'Google Apps Script sedang menyimpan foto fisik ke Google Drive...');
             }
 
             response = await fetch(gasUrl, {
@@ -3312,7 +3342,7 @@
         statusSpinner.classList.add('hidden');
         if (result.status === 'success' || result.result === 'success') {
           iconSuccess.classList.remove('hidden');
-          statusTitle.textContent = 'Kunjungan Berhasil Disimpan!';
+          updateUploadProgress(100, 'Kunjungan Berhasil Disimpan!', 'Data & foto sukses mendarat di Google Sheets!');
 
           let photoSummaryStr = '';
           if (result.photo_stats) {
