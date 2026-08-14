@@ -2853,29 +2853,29 @@
 
       row[121] = getVal('field_PROMO_LAINNYA_CATATAN'); // 122: CATATAN PROMO_LAINNYA (row[121])
 
-      // Helper function for Promo Khusus Block (19 cols: 1 header status + 1 katagori + 15 varian + 2 foto)
-      const fillPromoKhususBlock = (blockKey, startIdx, categoryName) => {
+      // Helper function for Promo Khusus Block (20 cols: 1 header status + 1 katagori + 16 varian + 2 foto)
+      const fillPromoKhususBlock = (blockKey, startIdx, categoryName, varianCount = 16) => {
         const isAda = getVal(`field_${blockKey}_ADA`);
         row[startIdx] = isAda; // Status ADA / TIDAK ADA
         row[startIdx + 1] = isAda === 'ADA' ? categoryName : ''; // KATAGORI
 
-        // 15 Varian Produk (1-15)
-        for (let i = 1; i <= 15; i++) {
+        // 16 Varian Produk (1-16)
+        for (let i = 1; i <= varianCount; i++) {
           const chk = document.getElementById(`chk_${blockKey}_${i}`);
           row[startIdx + 1 + i] = (isAda === 'ADA' && chk && chk.checked) ? 'YA' : '';
         }
 
         // 2 Foto Promo Khusus
-        row[startIdx + 17] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_1`) : '';
-        row[startIdx + 18] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_2`) : '';
+        row[startIdx + 1 + varianCount + 1] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_1`) : '';
+        row[startIdx + 1 + varianCount + 2] = isAda === 'ADA' ? getVal(`field_FOTO_${blockKey}_2`) : '';
       };
 
       // Fill 5 Promo Khusus Blocks (PSM 19 cols, MURAH/PWP/JSM/GANTUNG 20 cols each)
-      fillPromoKhususBlock('PSM', 123, 'PSM'); // Cols 124-142 (row[123]-row[141], index 141 = EL = FOTO_PSM 2)
-      fillPromoKhususBlock('MURAH', 142, 'MURAH SEJAGAT'); // Cols 143-162 (row[142]-row[161], index 160 = FE = FOTO_MURAH 1, index 161 = FF = FOTO_MURAH 2)
-      fillPromoKhususBlock('PWP_KHUSUS', 162, 'PWP'); // Cols 163-182 (row[162]-row[181], index 162 = FG = PROMO_PWP)
-      fillPromoKhususBlock('JSM', 182, 'JSM'); // Cols 183-202 (row[182]-row[201])
-      fillPromoKhususBlock('GANTUNG', 202, 'GANTUNG'); // Cols 203-222 (row[202]-row[221])
+      fillPromoKhususBlock('PSM', 123, 'PSM', 15); // Cols 124-142 (row[123]-row[141], index 141 = EL = FOTO_PSM 2)
+      fillPromoKhususBlock('MURAH', 142, 'MURAH SEJAGAT', 16); // Cols 143-162 (row[142]-row[161], index 160 = FE = FOTO_MURAH 1, index 161 = FF = FOTO_MURAH 2)
+      fillPromoKhususBlock('PWP_KHUSUS', 162, 'PWP', 16); // Cols 163-182 (row[162]-row[181], index 162 = FG = PROMO_PWP, index 179 = FX = VARIAN PWP_MAYONAISE)
+      fillPromoKhususBlock('JSM', 182, 'JSM', 16); // Cols 183-202 (row[182]-row[201], index 182 = GA = PROMO_JSM)
+      fillPromoKhususBlock('GANTUNG', 202, 'GANTUNG', 16); // Cols 203-222 (row[202]-row[221])
 
       // Col 223: FOTO PAJANGAN (row[222])
       row[222] = getVal('field_FOTO_PAJANGAN_OPTION'); // FOTO PAJANGAN
