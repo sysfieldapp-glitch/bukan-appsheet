@@ -3282,12 +3282,16 @@
       btnCloseStatus.onclick = () => {
         modalStatus.classList.add('hidden');
         if (iconSuccess.classList.contains('hidden') === false) {
+          const activeStoreCode = (document.getElementById('field_KODETOKO').value || '').trim();
+          if (activeStoreCode) markStoreVisitedToday(activeStoreCode);
           closeFormAndReturnToDashboard();
+          // AUTO-SYNC 1: Post-Submit Auto-Sync di Background
+          syncStoresOnline();
         }
       };
     }
 
-    // INIT AUTO RESTORE ON PAGE LOAD
+    // INIT AUTO RESTORE & AUTO-SYNC ENGINE ON PAGE LOAD
     document.addEventListener('DOMContentLoaded', async () => {
       // Form input change listener for live draft auto-save
       document.getElementById('viewFormInput')?.addEventListener('input', () => saveVisitDraftState());
@@ -3295,6 +3299,29 @@
 
       // Auto-restore draft if available
       await restoreVisitDraftState();
+
+      // AUTO-SYNC 2: Background Auto-Sync saat pertama kali aplikasi dibuka
+      fetchVisitedTodayFromGas().then(() => {
+        renderStoreCardsDashboard();
+      });
+
+      // AUTO-SYNC 3: Tab Visibility Change Auto-Sync (Saat sales crew kembali ke tab Web App ini)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          fetchVisitedTodayFromGas().then(() => {
+            renderStoreCardsDashboard();
+          });
+        }
+      });
+
+      // AUTO-SYNC 4: Background Periodic Auto-Sync setiap 3 Menit
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchVisitedTodayFromGas().then(() => {
+            renderStoreCardsDashboard();
+          });
+        }
+      }, 180000); // 3 menit
     });
   </script>
 </body>
