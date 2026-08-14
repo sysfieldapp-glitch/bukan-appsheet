@@ -2871,36 +2871,36 @@
       };
 
       // Fill 5 Promo Khusus Blocks (19 Cols each = 95 Cols total)
-      fillPromoKhususBlock('PSM', 122, 'PSM'); // Cols 123-141 (row[122]-row[140])
-      fillPromoKhususBlock('MURAH', 141, 'MURAH SEJAGAT'); // Cols 142-160 (row[141]-row[159])
-      fillPromoKhususBlock('PWP_KHUSUS', 160, 'PWP'); // Cols 161-179 (row[160]-row[178])
-      fillPromoKhususBlock('JSM', 179, 'JSM'); // Cols 180-198 (row[179]-row[197])
-      fillPromoKhususBlock('GANTUNG', 198, 'GANTUNG'); // Cols 199-217 (row[198]-row[215])
+      fillPromoKhususBlock('PSM', 123, 'PSM'); // Cols 124-142 (row[123]-row[141], index 141 = EL = FOTO_PSM 2)
+      fillPromoKhususBlock('MURAH', 142, 'MURAH SEJAGAT'); // Cols 143-161 (row[142]-row[160], index 142 = EM = PROMO_PALING MURAH SEJAGAT)
+      fillPromoKhususBlock('PWP_KHUSUS', 161, 'PWP'); // Cols 162-180 (row[161]-row[179])
+      fillPromoKhususBlock('JSM', 180, 'JSM'); // Cols 181-199 (row[180]-row[198])
+      fillPromoKhususBlock('GANTUNG', 199, 'GANTUNG'); // Cols 200-218 (row[199]-row[217])
 
-      // Col 217: FOTO PAJANGAN (row[216])
-      row[216] = getVal('field_FOTO_PAJANGAN_OPTION'); // 217: FOTO PAJANGAN
+      // Col 219: FOTO PAJANGAN (row[218])
+      row[218] = getVal('field_FOTO_PAJANGAN_OPTION'); // FOTO PAJANGAN
 
-      // Cols 218-223: Foto Before 1-6 (row[217]-row[222])
+      // Cols 220-225: Foto Before 1-6 (row[219]-row[224])
       for (let i = 1; i <= 6; i++) {
-        row[216 + i] = getVal(`field_FOTO_BEFORE_${i}`);
+        row[218 + i] = getVal(`field_FOTO_BEFORE_${i}`);
       }
 
-      // Cols 224-229: Foto After 1-6 (row[223]-row[228])
+      // Cols 226-231: Foto After 1-6 (row[225]-row[230])
       for (let i = 1; i <= 6; i++) {
-        row[222 + i] = getVal(`field_FOTO_AFTER_${i}`);
+        row[224 + i] = getVal(`field_FOTO_AFTER_${i}`);
       }
 
-      // Col 230: FOTO PAJANGAN HYSU (row[229])
-      row[229] = getVal('field_FOTO_HYSU');
+      // Col 232: FOTO PAJANGAN HYSU (row[231])
+      row[231] = getVal('field_FOTO_HYSU');
 
-      // Cols 231-245: Foto Rak Reguler 1-15 (row[230]-row[244])
+      // Cols 233-247: Foto Rak Reguler 1-15 (row[232]-row[246])
       for (let i = 1; i <= 15; i++) {
-        row[229 + i] = getVal(`field_RAK_REG_${i}`) || getVal(`field_FOTO_RAK_REG_${i}`);
+        row[231 + i] = getVal(`field_RAK_REG_${i}`) || getVal(`field_FOTO_RAK_REG_${i}`);
       }
 
-      // Cols 246-249: Foto Extra Display 1-4 (row[245]-row[248])
+      // Cols 248-251: Foto Extra Display 1-4 (row[247]-row[250])
       for (let i = 1; i <= 4; i++) {
-        row[244 + i] = getVal(`field_FOTO_EXTRA_${i}`);
+        row[246 + i] = getVal(`field_FOTO_EXTRA_${i}`);
       }
 
       return row;
