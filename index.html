@@ -2410,20 +2410,25 @@
       );
     });
 
-    // CANVAS IMAGE COMPRESSION LOGIC
-    document.querySelectorAll('input[type="file"]').forEach(input => {
-      input.addEventListener('change', async (e) => {
+    // CANVAS IMAGE COMPRESSION LOGIC (EVENT DELEGATION UNTUK SEMUA FILE INPUT STATIC & DYNAMIC)
+    document.addEventListener('change', async (e) => {
+      if (e.target && e.target.matches('input[type="file"]')) {
         const file = e.target.files[0];
         if (!file) return;
 
         const uploaderDiv = e.target.closest('.photo-uploader');
+        if (!uploaderDiv) return;
+
         const targetHiddenId = uploaderDiv.getAttribute('data-target');
+        if (!targetHiddenId) return;
+
+        const targetHiddenInput = document.getElementById(targetHiddenId);
         const previewDiv = document.getElementById(`preview_${targetHiddenId.replace('field_', '')}`);
         const sizeSpan = document.getElementById(`size_${targetHiddenId.replace('field_', '')}`);
 
         try {
           const compressedBase64 = await compressImage(file, 1024, 0.7);
-          document.getElementById(targetHiddenId).value = compressedBase64;
+          if (targetHiddenInput) targetHiddenInput.value = compressedBase64;
 
           if (previewDiv) {
             const img = previewDiv.querySelector('img');
@@ -2439,7 +2444,7 @@
         } catch (err) {
           alert('Gagal memproses gambar: ' + err.message);
         }
-      });
+      }
     });
 
     function compressImage(file, maxDimension, quality) {
