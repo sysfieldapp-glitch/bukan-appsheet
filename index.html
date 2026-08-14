@@ -3381,7 +3381,7 @@
 
             // FALLBACK VERIFIKASI MOBILE: Cek apakah data sebenarnya SUDAH masuk ke Google Sheets!
             try {
-              const activeStoreCode = (document.getElementById('field_KODETOKO').value || '').trim();
+              const activeStoreCode = (document.getElementById('field_KODETOKO').value || '').trim().toUpperCase();
               if (activeStoreCode) {
                 const visitedList = await fetchVisitedTodayFromGas();
                 if (Array.isArray(visitedList) && visitedList.includes(activeStoreCode)) {
@@ -3405,6 +3405,9 @@
         statusSpinner.classList.add('hidden');
         if (result.status === 'success' || result.result === 'success') {
           iconSuccess.classList.remove('hidden');
+          iconError.classList.add('hidden');
+          if (blockDiag) blockDiag.classList.add('hidden');
+          if (txtDiagLog) txtDiagLog.value = '';
           updateUploadProgress(100, 'Kunjungan Berhasil Disimpan!', 'Data & foto sukses mendarat di Google Sheets!');
 
           let photoSummaryStr = '';
