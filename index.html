@@ -1058,19 +1058,66 @@
       saveVisitDraftState();
     }
 
-    // ID CREW LOOKUP ENGINE
+    // ID CREW / NAMA CREW LOOKUP ENGINE (DENGAN SUPPORT AUTO MATCHING NAMA & ALIAS)
+    const CREW_ALIAS_MAP = {
+      'RO036': 'YOHANDI PRATAMA',
+      'RO033': 'ARIFKI',
+      'RO032': 'AHMAD GHOZALI',
+    };
+
     function lookupCrewById(idCrew) {
       if (!idCrew) return null;
       const cleanId = String(idCrew).trim().toLowerCase();
-      const match = masterTokoData.find(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
-      if (match) {
-        const stores = masterTokoData.filter(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
+
+      // 1. Coba pencocokan langsung kodeCrew (misal s.kodeCrew === 'RO036')
+      let stores = masterTokoData.filter(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
+      if (stores.length > 0) {
         return {
-          namaCrew: String(match.namaCrew || ''),
-          kodeCrew: String(match.kodeCrew || ''),
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: String(stores[0].kodeCrew || idCrew),
           stores: stores
         };
       }
+
+      // 2. Coba pencocokan via Crew Alias Map (misal RO036 -> YOHANDI PRATAMA)
+      const aliasName = CREW_ALIAS_MAP[idCrew.toUpperCase()];
+      if (aliasName) {
+        const aliasClean = aliasName.toLowerCase();
+        stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(aliasClean));
+        if (stores.length > 0) {
+          return {
+            namaCrew: aliasName,
+            kodeCrew: idCrew.toUpperCase(),
+            stores: stores
+          };
+        }
+      }
+
+      // 3. Coba pencocokan namaCrew (misal input 'YOHANDI' atau 'PRATAMA')
+      stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(cleanId));
+      if (stores.length > 0) {
+        return {
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: idCrew.toUpperCase(),
+          stores: stores
+        };
+      }
+
+      // 4. Fallback matching bolak-balik
+      stores = masterTokoData.filter(s => {
+        if (!s.namaCrew) return false;
+        const nameClean = String(s.namaCrew).trim().toLowerCase();
+        return nameClean.includes(cleanId) || cleanId.includes(nameClean);
+      });
+
+      if (stores.length > 0) {
+        return {
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: idCrew.toUpperCase(),
+          stores: stores
+        };
+      }
+
       return null;
     }
 
@@ -2359,55 +2406,30 @@
       };
 
       const result = [];
-      let headerIndices = null;
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
         const clean = parseCSVLine(line);
-        if (clean.length < 2) continue;
+        if (clean.length < 3) continue;
 
-        // Auto-detect lokasi kolom berdasarkan header baris pertama
-        if (!headerIndices) {
-          const firstRowUpper = clean.map(c => c.toUpperCase().trim());
-          if (firstRowUpper.some(h => h.includes('KODE') || h.includes('ACCOUNT') || h.includes('RUTE') || h.includes('CREW') || h.includes('ID'))) {
-            headerIndices = {
-              account: firstRowUpper.findIndex(h => h.includes('ACCOUNT')),
-              kodeToko: firstRowUpper.findIndex(h => (h.includes('KODE') && h.includes('TOKO')) || h === 'KODE_TOKO' || h === 'KODE TOKO'),
-              namaToko: firstRowUpper.findIndex(h => (h.includes('NAMA') && h.includes('TOKO')) || h === 'NAMA_TOKO' || h === 'NAMA TOKO'),
-              kodeCrew: firstRowUpper.findIndex(h => h === 'ID CREW' || h === 'KODE CREW' || h === 'ID_CREW' || h === 'KODE_CREW' || h === 'CREW' || h.includes('ID CREW') || h.includes('KODE CREW')),
-              namaCrew: firstRowUpper.findIndex(h => h === 'NAMA CREW' || h === 'NAMA_CREW' || (h.includes('NAMA') && h.includes('CREW'))),
-              rute: firstRowUpper.findIndex(h => h === 'RUTE' || (h.includes('RUTE') && !h.includes('PROMO'))),
-              tipeToko: firstRowUpper.findIndex(h => h.includes('TIPE') || h.includes('FORMAT'))
-            };
+        // Abaikan baris header gabungan terkorupsi / header CSV bawaan
+        if (clean[0].length > 80 || clean[0].includes('ALFAMART ALFAMART') || clean[0].toUpperCase().includes('ACCOUNT ALFAMART')) continue;
+        if (clean[0].toUpperCase().includes('ACCOUNT') && clean[1].toUpperCase().includes('KODE')) continue;
 
-            if (headerIndices.account === -1) headerIndices.account = 0;
-            if (headerIndices.kodeToko === -1) headerIndices.kodeToko = 1;
-            if (headerIndices.namaToko === -1) headerIndices.namaToko = 2;
-            if (headerIndices.kodeCrew === -1) headerIndices.kodeCrew = 3;
-            if (headerIndices.namaCrew === -1) headerIndices.namaCrew = 4;
-            if (headerIndices.rute === -1) headerIndices.rute = 5;
-            if (headerIndices.tipeToko === -1) headerIndices.tipeToko = 6;
-
-            continue; // Skip baris header
-          } else {
-            headerIndices = { account: 0, kodeToko: 1, namaToko: 2, kodeCrew: 3, namaCrew: 4, rute: 5, tipeToko: 6 };
-          }
-        }
-
-        const kodeToko = clean[headerIndices.kodeToko] || '';
-        const namaToko = clean[headerIndices.namaToko] || '';
+        const kodeToko = clean[1] || '';
+        const namaToko = clean[2] || '';
         if (!kodeToko && !namaToko) continue;
 
         result.push({
-          account: clean[headerIndices.account] || '',
+          account: clean[0] || '',
           kodeToko: kodeToko,
           namaToko: namaToko,
-          kodeCrew: clean[headerIndices.kodeCrew] || '',
-          namaCrew: clean[headerIndices.namaCrew] || '',
-          rute: clean[headerIndices.rute] || '',
-          tipeToko: clean[headerIndices.tipeToko] || ''
+          kodeCrew: clean[3] || '',
+          namaCrew: clean[4] || '',
+          rute: clean[5] || '',
+          tipeToko: clean[6] || ''
         });
       }
       return result;
