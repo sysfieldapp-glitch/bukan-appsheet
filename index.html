@@ -1149,7 +1149,13 @@
         if (dashCrewName) dashCrewName.textContent = lookup.namaCrew;
         if (dashCrewId) dashCrewId.textContent = `ID: ${activeIdCrew.toUpperCase()}`;
 
-        const todayStores = lookup.stores.filter(s => String(s.rute).trim() === todayDateStr);
+        const extractDayNum = (val) => {
+          if (!val) return '';
+          const m = String(val).match(/\d+/);
+          return m ? String(parseInt(m[0], 10)) : String(val).trim();
+        };
+
+        const todayStores = lookup.stores.filter(s => extractDayNum(s.rute) === todayDateStr);
         if (todayStores.length > 0) {
           filteredStores = todayStores;
         } else {
@@ -2360,15 +2366,15 @@
       return result;
     }
 
-    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% BEBAS CORS & 100% REALTIME)
+    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% REALTIME + CACHE BUSTER)
     async function fetchMasterTokoFromGas() {
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
       const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
       const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}`;
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}&t=${Date.now()}`;
 
       try {
-        const res = await fetch(csvUrl, { cache: 'no-cache' });
+        const res = await fetch(csvUrl, { cache: 'no-store' });
         if (res.ok) {
           const csvText = await res.text();
           const stores = parseGoogleSheetsCSV(csvText);
