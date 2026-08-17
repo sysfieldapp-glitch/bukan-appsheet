@@ -2370,15 +2370,15 @@
 
         // Auto-detect lokasi kolom berdasarkan header baris pertama
         if (!headerIndices) {
-          const firstRowUpper = clean.map(c => c.toUpperCase());
-          if (firstRowUpper.some(h => h.includes('KODE') || h.includes('ACCOUNT') || h.includes('RUTE') || h.includes('CREW'))) {
+          const firstRowUpper = clean.map(c => c.toUpperCase().trim());
+          if (firstRowUpper.some(h => h.includes('KODE') || h.includes('ACCOUNT') || h.includes('RUTE') || h.includes('CREW') || h.includes('ID'))) {
             headerIndices = {
               account: firstRowUpper.findIndex(h => h.includes('ACCOUNT')),
-              kodeToko: firstRowUpper.findIndex(h => h.includes('KODE TOKO') || (h.includes('KODE') && h.includes('TOKO')) || h === 'KODE_TOKO'),
-              namaToko: firstRowUpper.findIndex(h => h.includes('NAMA TOKO') || (h.includes('NAMA') && h.includes('TOKO')) || h === 'NAMA_TOKO'),
-              kodeCrew: firstRowUpper.findIndex(h => h.includes('ID CREW') || h.includes('KODE CREW') || h.includes('ID_CREW') || h.includes('CREW') || h.includes('RO')),
-              namaCrew: firstRowUpper.findIndex(h => h.includes('NAMA CREW') || h.includes('NAMA_CREW')),
-              rute: firstRowUpper.findIndex(h => h.includes('RUTE')),
+              kodeToko: firstRowUpper.findIndex(h => (h.includes('KODE') && h.includes('TOKO')) || h === 'KODE_TOKO' || h === 'KODE TOKO'),
+              namaToko: firstRowUpper.findIndex(h => (h.includes('NAMA') && h.includes('TOKO')) || h === 'NAMA_TOKO' || h === 'NAMA TOKO'),
+              kodeCrew: firstRowUpper.findIndex(h => h === 'ID CREW' || h === 'KODE CREW' || h === 'ID_CREW' || h === 'KODE_CREW' || h === 'CREW' || h.includes('ID CREW') || h.includes('KODE CREW')),
+              namaCrew: firstRowUpper.findIndex(h => h === 'NAMA CREW' || h === 'NAMA_CREW' || (h.includes('NAMA') && h.includes('CREW'))),
+              rute: firstRowUpper.findIndex(h => h === 'RUTE' || (h.includes('RUTE') && !h.includes('PROMO'))),
               tipeToko: firstRowUpper.findIndex(h => h.includes('TIPE') || h.includes('FORMAT'))
             };
 
