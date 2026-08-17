@@ -2333,34 +2333,81 @@
       }
     }
 
-    // PARSER SIMPLE CSV UNTUK DIRECT GOOGLE SHEETS
+    // PARSER CSV ROBUST DENGAN AUTO-DETECT HEADER & PENGANANAN SPASI NAMA TOKO
     function parseGoogleSheetsCSV(csvText) {
+      if (!csvText) return [];
       const lines = csvText.split(/\r?\n/);
       if (lines.length <= 1) return [];
 
+      const parseCSVLine = (text) => {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === ',' && !inQuotes) {
+            result.push(cur.trim().replace(/^"|"$/g, ''));
+            cur = '';
+          } else {
+            cur += c;
+          }
+        }
+        result.push(cur.trim().replace(/^"|"$/g, ''));
+        return result;
+      };
+
       const result = [];
+      let headerIndices = null;
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple CSV splitter handling quoted values
-        const cols = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-        const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+        const clean = parseCSVLine(line);
+        if (clean.length < 2) continue;
 
-        // Skip header row if it contains 'ACCOUNT' or 'KODE TOKO'
-        const accountStr = clean[0] || '';
-        const kodeStr = clean[1] || '';
-        if (accountStr.toUpperCase().includes('ACCOUNT') && kodeStr.toUpperCase().includes('KODE')) continue;
-        if (!clean[1] && !clean[2]) continue; // Skip jika kode/nama toko kosong
+        // Auto-detect lokasi kolom berdasarkan header baris pertama
+        if (!headerIndices) {
+          const firstRowUpper = clean.map(c => c.toUpperCase());
+          if (firstRowUpper.some(h => h.includes('KODE') || h.includes('ACCOUNT') || h.includes('RUTE') || h.includes('CREW'))) {
+            headerIndices = {
+              account: firstRowUpper.findIndex(h => h.includes('ACCOUNT')),
+              kodeToko: firstRowUpper.findIndex(h => h.includes('KODE TOKO') || (h.includes('KODE') && h.includes('TOKO')) || h === 'KODE_TOKO'),
+              namaToko: firstRowUpper.findIndex(h => h.includes('NAMA TOKO') || (h.includes('NAMA') && h.includes('TOKO')) || h === 'NAMA_TOKO'),
+              kodeCrew: firstRowUpper.findIndex(h => h.includes('ID CREW') || h.includes('KODE CREW') || h.includes('ID_CREW') || h.includes('CREW') || h.includes('RO')),
+              namaCrew: firstRowUpper.findIndex(h => h.includes('NAMA CREW') || h.includes('NAMA_CREW')),
+              rute: firstRowUpper.findIndex(h => h.includes('RUTE')),
+              tipeToko: firstRowUpper.findIndex(h => h.includes('TIPE') || h.includes('FORMAT'))
+            };
+
+            if (headerIndices.account === -1) headerIndices.account = 0;
+            if (headerIndices.kodeToko === -1) headerIndices.kodeToko = 1;
+            if (headerIndices.namaToko === -1) headerIndices.namaToko = 2;
+            if (headerIndices.kodeCrew === -1) headerIndices.kodeCrew = 3;
+            if (headerIndices.namaCrew === -1) headerIndices.namaCrew = 4;
+            if (headerIndices.rute === -1) headerIndices.rute = 5;
+            if (headerIndices.tipeToko === -1) headerIndices.tipeToko = 6;
+
+            continue; // Skip baris header
+          } else {
+            headerIndices = { account: 0, kodeToko: 1, namaToko: 2, kodeCrew: 3, namaCrew: 4, rute: 5, tipeToko: 6 };
+          }
+        }
+
+        const kodeToko = clean[headerIndices.kodeToko] || '';
+        const namaToko = clean[headerIndices.namaToko] || '';
+        if (!kodeToko && !namaToko) continue;
 
         result.push({
-          account: clean[0] || '',
-          kodeToko: clean[1] || '',
-          namaToko: clean[2] || '',
-          kodeCrew: clean[3] || '',
-          namaCrew: clean[4] || '',
-          rute: clean[5] || '',
-          tipeToko: clean[6] || ''
+          account: clean[headerIndices.account] || '',
+          kodeToko: kodeToko,
+          namaToko: namaToko,
+          kodeCrew: clean[headerIndices.kodeCrew] || '',
+          namaCrew: clean[headerIndices.namaCrew] || '',
+          rute: clean[headerIndices.rute] || '',
+          tipeToko: clean[headerIndices.tipeToko] || ''
         });
       }
       return result;
