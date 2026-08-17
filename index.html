@@ -2451,23 +2451,33 @@
       fetchVisitedTodayFromGas();
     }
 
-    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini (termasuk AppSheet asli) ke localStorage
+    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini via HTTP POST (100% BEBAS CORS BLOCK)
     async function fetchVisitedTodayFromGas() {
       const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
       const secretToken = localStorage.getItem('GAS_SECRET_TOKEN') || DEFAULT_SECRET_TOKEN;
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-      const idCrew = document.getElementById('field_IDCREW')?.value.trim() || '';
+      const idCrew = (document.getElementById('field_IDCREW')?.value || '').trim();
 
-      if (!gasUrl || !secretToken) return;
+      if (!gasUrl || !secretToken) return [];
 
       try {
-        const fetchUrl = `${gasUrl}?action=getVisitedToday&secret_token=${encodeURIComponent(secretToken)}&region=${encodeURIComponent(currentRegion)}&id_crew=${encodeURIComponent(idCrew)}&t=${Date.now()}`;
-        const res = await fetch(fetchUrl);
+        const payload = {
+          action: 'getVisitedToday',
+          secret_token: secretToken,
+          region: currentRegion,
+          id_crew: idCrew
+        };
+
+        const res = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
         if (res.ok) {
           const data = await res.json();
           const visitedList = data.visited_stores || data.visited || [];
           if (data.status === 'success' && Array.isArray(visitedList)) {
-            // Merge hasil GAS dengan localStorage visited hari ini
             const key = getTodayKey();
             const localVisited = getVisitedStoresToday();
             let merged = [...localVisited];
@@ -2477,13 +2487,12 @@
             });
             localStorage.setItem(key, JSON.stringify(merged));
             console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
-            // Re-render dashboard supaya badge SUDAH VISIT langsung update
             renderStoreCardsDashboard();
             return visitedList;
           }
         }
       } catch (e) {
-        console.warn('[VisitedToday] Gagal fetch dari GAS, pakai cache lokal saja.', e);
+        console.warn('[VisitedToday] Gagal fetch dari GAS via POST, pakai cache lokal.', e);
       }
       return [];
     }
