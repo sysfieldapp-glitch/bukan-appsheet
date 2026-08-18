@@ -3522,9 +3522,18 @@
       const rowDetailList = buildAllDetailMatrixPayloads();
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
 
+      // Pre-generate 1 ID Visit 8-hex konsisten di Frontend agar semua attempt retry memakai ID yang sama persis
+      const hexChars = '0123456789abcdef';
+      let clientVisitId = '';
+      for (let i = 0; i < 8; i++) {
+        clientVisitId += hexChars.charAt(Math.floor(Math.random() * 16));
+      }
+      rowMatrix[0] = clientVisitId;
+
       const payload = {
         secret_token: secretToken,
         region: currentRegion,
+        id_visit: clientVisitId,
         row_data: rowMatrix,
         row_detail_list: rowDetailList
       };
