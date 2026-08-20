@@ -2279,13 +2279,21 @@
           }
         }
 
+        const parseGpsNum = (val) => {
+          if (val === null || val === undefined) return NaN;
+          const str = String(val).trim().replace(',', '.');
+          return parseFloat(str);
+        };
+
         const regionStores = cachedRegionJsonData[regionFileName];
         if (Array.isArray(regionStores)) {
           const match = regionStores.find(s => String(s.store_code || '').trim().toUpperCase() === cleanCode);
           if (match) {
+            const rawLat = parseGpsNum(match.latitude);
+            const rawLng = parseGpsNum(match.longitude);
             return {
-              lat: match.latitude ? parseFloat(match.latitude) : -5.107091,
-              lng: match.longitude ? parseFloat(match.longitude) : 105.293535,
+              lat: !isNaN(rawLat) ? rawLat : 1.495838,
+              lng: !isNaN(rawLng) ? rawLng : 124.841200,
               name: match.store_name || '',
               tipeToko: extractRawTipeToko(match)
             };
@@ -2309,17 +2317,17 @@
         let baseCoords = await getDynamicStoreLocationFromGithub(cleanCode);
 
         // Fallback: Check local masterTokoData array if scraper coords not found yet
-        if (!baseCoords || !baseCoords.lat) {
+        if (!baseCoords || isNaN(baseCoords.lat)) {
           const localStore = (masterTokoData || []).find(s => String(s.kodeToko || '').trim().toUpperCase() === cleanCode);
           if (localStore) {
-            let lLat = parseFloat(localStore.lat || localStore.latitude || localStore.mapLat);
-            let lLng = parseFloat(localStore.lng || localStore.longitude || localStore.mapLng);
-            if (!lLat && localStore.koordinat && localStore.koordinat.includes(',')) {
+            let lLat = parseGpsNum(localStore.lat || localStore.latitude || localStore.mapLat);
+            let lLng = parseGpsNum(localStore.lng || localStore.longitude || localStore.mapLng);
+            if (isNaN(lLat) && localStore.koordinat && localStore.koordinat.includes(',')) {
               const parts = localStore.koordinat.split(',');
-              lLat = parseFloat(parts[0]);
-              lLng = parseFloat(parts[1]);
+              lLat = parseGpsNum(parts[0]);
+              lLng = parseGpsNum(parts[1]);
             }
-            if (lLat && lLng) {
+            if (!isNaN(lLat) && !isNaN(lLng)) {
               baseCoords = { lat: lLat, lng: lLng, tipeToko: localStore.tipeToko || '' };
             }
           }
