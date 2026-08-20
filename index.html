@@ -3790,16 +3790,26 @@
             }
           } catch (netErr) {
             lastNetworkErr = netErr;
-            console.warn(`Submit attempt ${attempt} finished processing on GAS server:`, netErr);
+            console.warn(`Submit attempt ${attempt} network error:`, netErr);
 
-            // Pada Google Apps Script, POST request selalu 100% sukses diproses di server (Sheets & Drive)
-            // sebelum browser memicu redirect/CORS check. Tandai toko SUDAH VISIT & anggap sukses instan!
-            const activeStoreCode = (document.getElementById('field_KODETOKO')?.value || '').trim().toUpperCase();
-            if (activeStoreCode) {
-              markStoreVisitedToday(activeStoreCode);
+            // Verifikasi Riil dari Google Sheets (gviz CSV): Cek apakah data benar-benar SUDAH mendarat di Google Sheets!
+            try {
+              const activeStoreCode = (document.getElementById('field_KODETOKO')?.value || '').trim().toUpperCase();
+              if (activeStoreCode) {
+                await new Promise(r => setTimeout(r, 1200));
+                const visitedList = await fetchVisitedTodayFromGas();
+                if (Array.isArray(visitedList) && visitedList.includes(activeStoreCode)) {
+                  console.log('[Verification] Store found in Google Sheets! Confirmed success.');
+                  markStoreVisitedToday(activeStoreCode);
+                  result = { status: 'success', message: 'Data & foto terkonfirmasi aman tersimpan di Google Sheets & Drive!' };
+                  break;
+                } else {
+                  console.warn('[Verification] Store NOT found in Google Sheets yet. Will retry attempt...');
+                }
+              }
+            } catch (eVrf) {
+              console.warn('[Verification Check Failed]', eVrf);
             }
-            result = { status: 'success', message: 'Data & foto terkonfirmasi aman tersimpan di Google Sheets & Drive!' };
-            break;
           }
         }
 
