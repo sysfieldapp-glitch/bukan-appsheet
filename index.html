@@ -3679,9 +3679,9 @@
               updateUploadProgress(70, 'Langkah 3/4: Memproses Foto & Drive', 'Google Apps Script sedang menyimpan foto fisik ke Google Drive...');
             }
 
-            // AbortController timeout 45 detik per percobaan agar HP tidak gantung (hang) dan cukup waktu untuk sinyal HP seluler
+            // AbortController timeout 75 detik per percobaan agar HP seluler tidak false timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const timeoutId = setTimeout(() => controller.abort(), 75000);
 
             response = await fetch(gasUrl, {
               method: 'POST',
