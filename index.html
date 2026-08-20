@@ -2557,11 +2557,22 @@
                 }
 
                 if (isToday) {
-                  const matchCrew = !idCrew ||
-                                    rowIdCrew === idCrew ||
-                                    rowIdCrew.includes(idCrew) ||
-                                    rowNamaCrew.includes(idCrew) ||
-                                    (idCrew.includes('ro036') && rowNamaCrew.includes('yohandi'));
+                  // Smart Crew & Alias Matcher (Mencocokkan RO036 vs RC036, YOHANDI PRATAMA, angka 036, dll.)
+                  const savedProf = JSON.parse(localStorage.getItem('USER_PROFILE_DATA') || '{}');
+                  const targetCrewId = (savedProf.id_crew || document.getElementById('field_IDCREW')?.value || idCrew || '').trim().toLowerCase();
+                  const targetCrewName = (savedProf.nama_crew || document.getElementById('field_NAMACREW')?.value || '').trim().toLowerCase();
+
+                  const crewNumMatch = targetCrewId.match(/\d+/);
+                  const crewNum = crewNumMatch ? crewNumMatch[0] : '';
+                  const crewFirstName = targetCrewName ? targetCrewName.split(' ')[0] : '';
+
+                  let matchCrew = !targetCrewId && !targetCrewName;
+                  if (!matchCrew) {
+                    if (rowIdCrew && targetCrewId && (rowIdCrew === targetCrewId || rowIdCrew.includes(targetCrewId))) matchCrew = true;
+                    else if (rowNamaCrew && targetCrewId && rowNamaCrew.includes(targetCrewId)) matchCrew = true;
+                    else if (crewNum && crewNum.length >= 2 && (rowIdCrew.includes(crewNum) || rowNamaCrew.includes(crewNum))) matchCrew = true;
+                    else if (crewFirstName && crewFirstName.length >= 3 && rowNamaCrew.includes(crewFirstName)) matchCrew = true;
+                  }
 
                   if (matchCrew && kodeToko && !visitedCodes.includes(kodeToko)) {
                     visitedCodes.push(kodeToko);
