@@ -526,9 +526,6 @@ function doPost(e) {
     rowData[3] = dateFormattedMdy;
 
     // 4. Dapatkan Folder Google Drive & Header Baris 1
-    const regConfig =
-      REGION_SPREADSHEETS[region] || REGION_SPREADSHEETS["LUAR_PULAU"];
-    const photoPrefix = regConfig.photoPrefix || "";
     const driveFolder = getTargetFolder(region);
     const driveFolderAvailable = driveFolder !== null;
     let sheetHeaders = [];
