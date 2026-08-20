@@ -666,9 +666,9 @@
         <div>
           <label class="block text-slate-700 font-semibold mb-1">Wilayah / Region Kunjungan <span class="text-rose-500">*</span></label>
           <select id="profRegionSelect" class="w-full bg-slate-50 border border-blue-300 rounded-xl px-3 py-2.5 text-slate-900 font-bold text-xs focus:bg-white focus:outline-none focus:border-blue-600">
-            <option value="LUAR_PULAU">🌴 LUAR PULAU (Main Spreadsheet #1 / Lama)</option>
-            <option value="LUAR_PULAU_BARU">🚀 LUAR PULAU (Modul Baru 2026)</option>
-            <option value="DALAM_PULAU">🏢 DALAM PULAU (Main Spreadsheet #2)</option>
+            <option value="LUAR_PULAU">🌴 LUAR PULAU - LP4 (AppSheet 05. RO MDS LP 4)</option>
+            <option value="LUAR_PULAU_BARU">🚀 LUAR PULAU - LP3 (AppSheet 05. RO MDS LP 3)</option>
+            <option value="DALAM_PULAU">🏢 DALAM PULAU</option>
           </select>
         </div>
 
@@ -2594,13 +2594,13 @@
       const badge = document.getElementById('dashRegionBadge');
       if (badge) {
         if (region === 'LUAR_PULAU_BARU') {
-          badge.textContent = '🚀 LUAR PULAU (MODUL BARU)';
+          badge.textContent = '🚀 LUAR PULAU (LP3)';
           badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-emerald-400 text-emerald-950 shadow-sm border border-emerald-300 uppercase inline-block ml-1.5';
         } else if (region === 'DALAM_PULAU') {
           badge.textContent = '🏢 DALAM PULAU';
           badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-amber-400 text-amber-950 shadow-sm border border-amber-300 uppercase inline-block ml-1.5';
         } else {
-          badge.textContent = '🌴 LUAR PULAU (MODUL LAMA)';
+          badge.textContent = '🌴 LUAR PULAU (LP4)';
           badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-white/20 text-white border border-white/30 uppercase inline-block ml-1.5';
         }
       }
