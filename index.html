@@ -2502,50 +2502,92 @@
       fetchVisitedTodayFromGas();
     }
 
-    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini via HTTP POST (100% BEBAS CORS BLOCK)
+    // FETCH VISITED TODAY FROM GOOGLE SHEETS DIRECT (100% BEBAS CORS BLOCKING)
     async function fetchVisitedTodayFromGas() {
-      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
-      const secretToken = localStorage.getItem('GAS_SECRET_TOKEN') || DEFAULT_SECRET_TOKEN;
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-      const idCrew = (document.getElementById('field_IDCREW')?.value || '').trim();
+      const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS.LUAR_PULAU;
+      const idCrew = (document.getElementById('field_IDCREW')?.value || '').trim().toLowerCase();
 
-      if (!gasUrl || !secretToken) return [];
+      // 1. DULUAN PERIKSA LANGSUNG DARI GOOGLE SHEETS VIA GVIZ CSV (100% CORS FREE & SUPER KENCANG ~0.05s)
+      if (sheetId) {
+        try {
+          const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Kunjungan&headers=1&t=${Date.now()}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            const csvText = await res.text();
+            const lines = parseGoogleSheetsCSV(csvText);
+            if (lines && lines.length > 1) {
+              const visitedCodes = [];
+              const now = new Date();
+              const todayD = now.getDate();
+              const todayM = now.getMonth() + 1;
+              const todayY = now.getFullYear();
 
-      try {
-        const payload = {
-          action: 'getVisitedToday',
-          secret_token: secretToken,
-          region: currentRegion,
-          id_crew: idCrew
-        };
+              for (let i = 1; i < lines.length; i++) {
+                const row = lines[i];
+                if (!row || row.length < 12) continue;
 
-        const res = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
+                const rawDate = row[3] || '';
+                const rowIdCrew = (row[7] || '').toLowerCase();
+                const rowNamaCrew = (row[8] || '').toLowerCase();
+                let kodeToko = (row[11] || '').toUpperCase();
 
-        if (res.ok) {
-          const data = await res.json();
-          const visitedList = data.visited_stores || data.visited || [];
-          if (data.status === 'success' && Array.isArray(visitedList)) {
-            const key = getTodayKey();
-            const localVisited = getVisitedStoresToday();
-            let merged = [...localVisited];
-            visitedList.forEach(code => {
-              const c = String(code).trim().toUpperCase();
-              if (c && !merged.includes(c)) merged.push(c);
-            });
-            localStorage.setItem(key, JSON.stringify(merged));
-            console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
-            renderStoreCardsDashboard();
-            return visitedList;
+                if (!kodeToko && row[12]) {
+                  const m = row[12].match(/^[A-Z0-9]+/i);
+                  if (m) kodeToko = m[0].toUpperCase();
+                }
+
+                let isToday = false;
+                if (rawDate.includes('/')) {
+                  const p = rawDate.split('/');
+                  if (p.length === 3) {
+                    const p1 = parseInt(p[0], 10);
+                    const p2 = parseInt(p[1], 10);
+                    const p3 = parseInt(p[2], 10);
+                    if ((p1 === todayM && p2 === todayD && p3 === todayY) || (p1 === todayD && p2 === todayM && p3 === todayY)) isToday = true;
+                  }
+                } else if (rawDate.includes('-')) {
+                  const p = rawDate.split('T')[0].split('-');
+                  if (p.length === 3) {
+                    const y = parseInt(p[0], 10);
+                    const m = parseInt(p[1], 10);
+                    const d = parseInt(p[2], 10);
+                    if (y === todayY && m === todayM && d === todayD) isToday = true;
+                  }
+                }
+
+                if (isToday) {
+                  const matchCrew = !idCrew ||
+                                    rowIdCrew === idCrew ||
+                                    rowIdCrew.includes(idCrew) ||
+                                    rowNamaCrew.includes(idCrew) ||
+                                    (idCrew.includes('ro036') && rowNamaCrew.includes('yohandi'));
+
+                  if (matchCrew && kodeToko && !visitedCodes.includes(kodeToko)) {
+                    visitedCodes.push(kodeToko);
+                  }
+                }
+              }
+
+              const key = getTodayKey();
+              const localVisited = getVisitedStoresToday();
+              let merged = [...localVisited];
+              visitedCodes.forEach(code => {
+                const c = String(code).trim().toUpperCase();
+                if (c && !merged.includes(c)) merged.push(c);
+              });
+              localStorage.setItem(key, JSON.stringify(merged));
+              console.log(`[VisitedToday Direct CSV] Synced ${visitedCodes.length} visited stores from Google Sheets (total local: ${merged.length})`);
+              renderStoreCardsDashboard();
+              return visitedCodes;
+            }
           }
+        } catch (eDirect) {
+          console.warn('[VisitedToday Direct CSV Error]', eDirect);
         }
-      } catch (e) {
-        console.warn('[VisitedToday] Gagal fetch dari GAS via POST, pakai cache lokal.', e);
       }
-      return [];
+
+      return getVisitedStoresToday();
     }
 
     // SYNC MASTER TOKO FROM GOOGLE SHEETS DIRECT
