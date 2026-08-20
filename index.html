@@ -666,7 +666,8 @@
         <div>
           <label class="block text-slate-700 font-semibold mb-1">Wilayah / Region Kunjungan <span class="text-rose-500">*</span></label>
           <select id="profRegionSelect" class="w-full bg-slate-50 border border-blue-300 rounded-xl px-3 py-2.5 text-slate-900 font-bold text-xs focus:bg-white focus:outline-none focus:border-blue-600">
-            <option value="LUAR_PULAU">🌴 LUAR PULAU (Main Spreadsheet #1)</option>
+            <option value="LUAR_PULAU">🌴 LUAR PULAU (Main Spreadsheet #1 / Lama)</option>
+            <option value="LUAR_PULAU_BARU">🚀 LUAR PULAU (Modul Baru 2026)</option>
             <option value="DALAM_PULAU">🏢 DALAM PULAU (Main Spreadsheet #2)</option>
           </select>
         </div>
@@ -795,6 +796,7 @@
     // Spreadsheet IDs per region untuk direct Google Sheets read (gviz/tq - no CORS)
     const REGION_SHEET_IDS = {
       LUAR_PULAU: '1JpG5MhUmz1qBtXp58b8FgV-_avCjVZKjNzuc824SUcE',
+      LUAR_PULAU_BARU: '1S__W_tKymV2xwqx_-vthpPt5jn5u7t3ePlgPqM1opMM',
       DALAM_PULAU: '1ZF8bAChTAYKMbmfeAamE9R0ge6hzS5AeddptOwJauW0'
     };
     const MASTER_TOKO_SHEET_NAME = 'Master_Toko';
@@ -1058,19 +1060,66 @@
       saveVisitDraftState();
     }
 
-    // ID CREW LOOKUP ENGINE
+    // ID CREW / NAMA CREW LOOKUP ENGINE (DENGAN SUPPORT AUTO MATCHING NAMA & ALIAS)
+    const CREW_ALIAS_MAP = {
+      'RO036': 'YOHANDI PRATAMA',
+      'RO033': 'ARIFKI',
+      'RO032': 'AHMAD GHOZALI',
+    };
+
     function lookupCrewById(idCrew) {
       if (!idCrew) return null;
       const cleanId = String(idCrew).trim().toLowerCase();
-      const match = masterTokoData.find(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
-      if (match) {
-        const stores = masterTokoData.filter(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
+
+      // 1. Coba pencocokan langsung kodeCrew (misal s.kodeCrew === 'RO036')
+      let stores = masterTokoData.filter(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
+      if (stores.length > 0) {
         return {
-          namaCrew: String(match.namaCrew || ''),
-          kodeCrew: String(match.kodeCrew || ''),
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: String(stores[0].kodeCrew || idCrew),
           stores: stores
         };
       }
+
+      // 2. Coba pencocokan via Crew Alias Map (misal RO036 -> YOHANDI PRATAMA)
+      const aliasName = CREW_ALIAS_MAP[idCrew.toUpperCase()];
+      if (aliasName) {
+        const aliasClean = aliasName.toLowerCase();
+        stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(aliasClean));
+        if (stores.length > 0) {
+          return {
+            namaCrew: aliasName,
+            kodeCrew: idCrew.toUpperCase(),
+            stores: stores
+          };
+        }
+      }
+
+      // 3. Coba pencocokan namaCrew (misal input 'YOHANDI' atau 'PRATAMA')
+      stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(cleanId));
+      if (stores.length > 0) {
+        return {
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: idCrew.toUpperCase(),
+          stores: stores
+        };
+      }
+
+      // 4. Fallback matching bolak-balik
+      stores = masterTokoData.filter(s => {
+        if (!s.namaCrew) return false;
+        const nameClean = String(s.namaCrew).trim().toLowerCase();
+        return nameClean.includes(cleanId) || cleanId.includes(nameClean);
+      });
+
+      if (stores.length > 0) {
+        return {
+          namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
+          kodeCrew: idCrew.toUpperCase(),
+          stores: stores
+        };
+      }
+
       return null;
     }
 
@@ -1149,7 +1198,13 @@
         if (dashCrewName) dashCrewName.textContent = lookup.namaCrew;
         if (dashCrewId) dashCrewId.textContent = `ID: ${activeIdCrew.toUpperCase()}`;
 
-        const todayStores = lookup.stores.filter(s => String(s.rute).trim() === todayDateStr);
+        const extractDayNum = (val) => {
+          if (!val) return '';
+          const m = String(val).match(/\d+/);
+          return m ? String(parseInt(m[0], 10)) : String(val).trim();
+        };
+
+        const todayStores = lookup.stores.filter(s => extractDayNum(s.rute) === todayDateStr);
         if (todayStores.length > 0) {
           filteredStores = todayStores;
         } else {
@@ -2327,30 +2382,52 @@
       }
     }
 
-    // PARSER SIMPLE CSV UNTUK DIRECT GOOGLE SHEETS
+    // PARSER CSV ROBUST DENGAN AUTO-DETECT HEADER & PENGANANAN SPASI NAMA TOKO
     function parseGoogleSheetsCSV(csvText) {
+      if (!csvText) return [];
       const lines = csvText.split(/\r?\n/);
       if (lines.length <= 1) return [];
 
+      const parseCSVLine = (text) => {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === ',' && !inQuotes) {
+            result.push(cur.trim().replace(/^"|"$/g, ''));
+            cur = '';
+          } else {
+            cur += c;
+          }
+        }
+        result.push(cur.trim().replace(/^"|"$/g, ''));
+        return result;
+      };
+
       const result = [];
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple CSV splitter handling quoted values
-        const cols = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-        const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+        const clean = parseCSVLine(line);
+        if (clean.length < 3) continue;
 
-        // Skip header row if it contains 'ACCOUNT' or 'KODE TOKO'
-        const accountStr = clean[0] || '';
-        const kodeStr = clean[1] || '';
-        if (accountStr.toUpperCase().includes('ACCOUNT') && kodeStr.toUpperCase().includes('KODE')) continue;
-        if (!clean[1] && !clean[2]) continue; // Skip jika kode/nama toko kosong
+        // Abaikan baris header gabungan terkorupsi / header CSV bawaan
+        if (clean[0].length > 80 || clean[0].includes('ALFAMART ALFAMART') || clean[0].toUpperCase().includes('ACCOUNT ALFAMART')) continue;
+        if (clean[0].toUpperCase().includes('ACCOUNT') && clean[1].toUpperCase().includes('KODE')) continue;
+
+        const kodeToko = clean[1] || '';
+        const namaToko = clean[2] || '';
+        if (!kodeToko && !namaToko) continue;
 
         result.push({
           account: clean[0] || '',
-          kodeToko: clean[1] || '',
-          namaToko: clean[2] || '',
+          kodeToko: kodeToko,
+          namaToko: namaToko,
           kodeCrew: clean[3] || '',
           namaCrew: clean[4] || '',
           rute: clean[5] || '',
@@ -2360,15 +2437,15 @@
       return result;
     }
 
-    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% BEBAS CORS & 100% REALTIME)
+    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% REALTIME + CACHE BUSTER)
     async function fetchMasterTokoFromGas() {
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
       const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
       const sheetEncoded = encodeURIComponent(MASTER_TOKO_SHEET_NAME);
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}`;
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}&t=${Date.now()}`;
 
       try {
-        const res = await fetch(csvUrl, { cache: 'no-cache' });
+        const res = await fetch(csvUrl, { cache: 'no-store' });
         if (res.ok) {
           const csvText = await res.text();
           const stores = parseGoogleSheetsCSV(csvText);
@@ -2398,23 +2475,33 @@
       fetchVisitedTodayFromGas();
     }
 
-    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini (termasuk AppSheet asli) ke localStorage
+    // FETCH VISITED TODAY FROM GAS — Sync kunjungan hari ini via HTTP POST (100% BEBAS CORS BLOCK)
     async function fetchVisitedTodayFromGas() {
       const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
       const secretToken = localStorage.getItem('GAS_SECRET_TOKEN') || DEFAULT_SECRET_TOKEN;
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
-      const idCrew = document.getElementById('field_IDCREW')?.value.trim() || '';
+      const idCrew = (document.getElementById('field_IDCREW')?.value || '').trim();
 
-      if (!gasUrl || !secretToken) return;
+      if (!gasUrl || !secretToken) return [];
 
       try {
-        const fetchUrl = `${gasUrl}?action=getVisitedToday&secret_token=${encodeURIComponent(secretToken)}&region=${encodeURIComponent(currentRegion)}&id_crew=${encodeURIComponent(idCrew)}&t=${Date.now()}`;
-        const res = await fetch(fetchUrl);
+        const payload = {
+          action: 'getVisitedToday',
+          secret_token: secretToken,
+          region: currentRegion,
+          id_crew: idCrew
+        };
+
+        const res = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
         if (res.ok) {
           const data = await res.json();
           const visitedList = data.visited_stores || data.visited || [];
           if (data.status === 'success' && Array.isArray(visitedList)) {
-            // Merge hasil GAS dengan localStorage visited hari ini
             const key = getTodayKey();
             const localVisited = getVisitedStoresToday();
             let merged = [...localVisited];
@@ -2424,13 +2511,12 @@
             });
             localStorage.setItem(key, JSON.stringify(merged));
             console.log(`[VisitedToday] Synced ${visitedList.length} visited stores from GAS (total local: ${merged.length})`);
-            // Re-render dashboard supaya badge SUDAH VISIT langsung update
             renderStoreCardsDashboard();
             return visitedList;
           }
         }
       } catch (e) {
-        console.warn('[VisitedToday] Gagal fetch dari GAS, pakai cache lokal saja.', e);
+        console.warn('[VisitedToday] Gagal fetch dari GAS via POST, pakai cache lokal.', e);
       }
       return [];
     }
@@ -2480,11 +2566,14 @@
       const region = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
       const badge = document.getElementById('dashRegionBadge');
       if (badge) {
-        if (region === 'DALAM_PULAU') {
+        if (region === 'LUAR_PULAU_BARU') {
+          badge.textContent = '🚀 LUAR PULAU (MODUL BARU)';
+          badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-emerald-400 text-emerald-950 shadow-sm border border-emerald-300 uppercase inline-block ml-1.5';
+        } else if (region === 'DALAM_PULAU') {
           badge.textContent = '🏢 DALAM PULAU';
           badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-amber-400 text-amber-950 shadow-sm border border-amber-300 uppercase inline-block ml-1.5';
         } else {
-          badge.textContent = '🌴 LUAR PULAU';
+          badge.textContent = '🌴 LUAR PULAU (MODUL LAMA)';
           badge.className = 'px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-white/20 text-white border border-white/30 uppercase inline-block ml-1.5';
         }
       }
