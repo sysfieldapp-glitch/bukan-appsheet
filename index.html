@@ -3705,9 +3705,9 @@
 
             // Pada Google Apps Script, POST request selalu 100% sukses diproses di server (Sheets & Drive)
             // sebelum browser memicu redirect/CORS check. Tandai toko SUDAH VISIT & anggap sukses instan!
-            const activeStoreCode = (document.getElementById('field_KODETOKO').value || '').trim().toUpperCase();
+            const activeStoreCode = (document.getElementById('field_KODETOKO')?.value || '').trim().toUpperCase();
             if (activeStoreCode) {
-              addVisitedStoreToday(activeStoreCode);
+              markStoreVisitedToday(activeStoreCode);
             }
             result = { status: 'success', message: 'Data & foto terkonfirmasi aman tersimpan di Google Sheets & Drive!' };
             break;
