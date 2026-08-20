@@ -2502,6 +2502,42 @@
       fetchVisitedTodayFromGas();
     }
 
+    // HELPER PARSER RAW ARRAY BARIS CSV (KHUSUS UNTUK SHEET KUNJUNGAN DIRECT READ)
+    function parseRawCSVRows(csvText) {
+      if (!csvText) return [];
+      const lines = csvText.split(/\r?\n/);
+      const result = [];
+
+      const parseCSVLine = (text) => {
+        const row = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === '"') {
+            inQuotes = !inQuotes;
+          } else if (c === ',' && !inQuotes) {
+            row.push(cur.trim().replace(/^"|"$/g, ''));
+            cur = '';
+          } else {
+            cur += c;
+          }
+        }
+        row.push(cur.trim().replace(/^"|"$/g, ''));
+        return row;
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const row = parseCSVLine(line);
+        if (row && row.length > 1) {
+          result.push(row);
+        }
+      }
+      return result;
+    }
+
     // FETCH VISITED TODAY FROM GOOGLE SHEETS DIRECT (100% BEBAS CORS BLOCKING)
     async function fetchVisitedTodayFromGas() {
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
@@ -2515,7 +2551,7 @@
           const res = await fetch(url);
           if (res.ok) {
             const csvText = await res.text();
-            const lines = parseGoogleSheetsCSV(csvText);
+            const lines = parseRawCSVRows(csvText);
             if (lines && lines.length > 1) {
               const visitedCodes = [];
               const now = new Date();
