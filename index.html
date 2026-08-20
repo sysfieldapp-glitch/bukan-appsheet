@@ -2437,7 +2437,7 @@
       return result;
     }
 
-    // HELPER FETCH MASTER TOKO REALTIME LANGSUNG DARI GOOGLE SHEETS VIA CSV (100% REALTIME + CACHE BUSTER)
+    // HELPER FETCH MASTER TOKO REALTIME DENGAN AUTO-HYBRID FALLBACK (BEBAS BUG ADMIN TERTINGGAL RUTE)
     async function fetchMasterTokoFromGas() {
       const currentRegion = localStorage.getItem('APP_REGION') || 'LUAR_PULAU';
       const sheetId = REGION_SHEET_IDS[currentRegion] || REGION_SHEET_IDS['LUAR_PULAU'];
@@ -2448,9 +2448,36 @@
         const res = await fetch(csvUrl, { cache: 'no-store' });
         if (res.ok) {
           const csvText = await res.text();
-          const stores = parseGoogleSheetsCSV(csvText);
+          let stores = parseGoogleSheetsCSV(csvText);
+
+          // Auto-Hybrid Merge: Jika Admin belum update Rute di Sheet Baru/Lama, gabungkan rute dari Sheet pendampingnya
+          if (currentRegion === 'LUAR_PULAU_BARU' || currentRegion === 'LUAR_PULAU') {
+            const fallbackRegionKey = currentRegion === 'LUAR_PULAU_BARU' ? 'LUAR_PULAU' : 'LUAR_PULAU_BARU';
+            const fallbackSheetId = REGION_SHEET_IDS[fallbackRegionKey];
+            if (fallbackSheetId) {
+              try {
+                const fbUrl = `https://docs.google.com/spreadsheets/d/${fallbackSheetId}/gviz/tq?tqx=out:csv&sheet=${sheetEncoded}&t=${Date.now()}`;
+                const fbRes = await fetch(fbUrl, { cache: 'no-store' });
+                if (fbRes.ok) {
+                  const fbCsv = await fbRes.text();
+                  const fbStores = parseGoogleSheetsCSV(fbCsv);
+                  if (fbStores && fbStores.length > 0) {
+                    const existingKeys = new Set(stores.map(s => `${String(s.kodeToko).trim().toUpperCase()}_${String(s.rute).trim()}`));
+                    fbStores.forEach(fItem => {
+                      const k = `${String(fItem.kodeToko).trim().toUpperCase()}_${String(fItem.rute).trim()}`;
+                      if (!existingKeys.has(k)) {
+                        stores.push(fItem);
+                        existingKeys.add(k);
+                      }
+                    });
+                  }
+                }
+              } catch (eFb) {}
+            }
+          }
+
           if (stores && stores.length > 0) {
-            console.log(`[Google Sheets Direct CSV] Successfully synced ${stores.length} stores from region ${currentRegion}`);
+            console.log(`[Google Sheets Direct CSV] Successfully synced ${stores.length} stores (Hybrid Mode Active)`);
             return stores;
           }
         }
