@@ -459,6 +459,9 @@ function doPost(e) {
     }
 
     const region = requestData.region || "LUAR_PULAU";
+    const regConfig =
+      REGION_SPREADSHEETS[region] || REGION_SPREADSHEETS["LUAR_PULAU"];
+    const photoPrefix = regConfig.photoPrefix || "";
 
     // Buka Sheet Target Berdasarkan Region (LUAR_PULAU / LUAR_PULAU_BARU / DALAM_PULAU)
     const ss = getTargetSpreadsheet(region);
@@ -467,14 +470,20 @@ function doPost(e) {
       sheet = ss.getSheets()[0];
     }
 
-    // 2. Gunakan ID_VISIT Konsisten dari Frontend (Mencegah Duplikasi Row/Foto Saat Retry)
-    let idVisit = (requestData.id_visit || requestData.idVisit || "")
+    // 2. Gunakan ID_VISIT Konsisten dari Frontend dengan Prefix AppSheet Native (MDS LP4_ / MDS LP3_ / MDS DK1_)
+    let rawHexId = (requestData.id_visit || requestData.idVisit || "")
       .toString()
       .trim()
       .toLowerCase();
-    if (!idVisit) {
-      idVisit = generateUniqueIdVisit(sheet).toLowerCase();
+    if (rawHexId.includes("_")) {
+      rawHexId = rawHexId.split("_").pop();
     }
+    if (!rawHexId) {
+      rawHexId = generateUniqueIdVisit(sheet).toLowerCase();
+    }
+
+    // ID_VISIT lengkap untuk Kolom A: MDS LP4_9cd19965 / MDS DK1_e6863579
+    const idVisit = `${photoPrefix}${rawHexId}`;
     rowData[0] = idVisit; // Set Kolom Index 1 (ID_VISIT)
 
     // 3. Set Tanggal & Waktu Presisi Native AppSheet (Wajib Ada Detik HH:mm:ss)
@@ -565,7 +574,7 @@ function doPost(e) {
             ? sheetHeaders[i].toString().trim()
             : getAppSheetPhotoLabel(i);
 
-        const appSheetFileName = `${photoPrefix}${idVisit}.${headerName}.${currentPhotoTimeHHMMSS}`;
+        const appSheetFileName = `${idVisit}.${headerName}.${currentPhotoTimeHHMMSS}`;
         rowData[i] = `Kunjungan_Images/${appSheetFileName}.jpg`;
 
         if (driveFolderAvailable) {
@@ -718,7 +727,7 @@ function doPost(e) {
               detailSheetHeaders[j].toString().trim() !== ""
                 ? detailSheetHeaders[j].toString().trim()
                 : `DETAIL_COL${j + 1}`;
-            const fileNameD = `${photoPrefix}${detailId}.${headerNameD}.${scanTimeStr.replace(/:/g, "")}`;
+            const fileNameD = `${detailId}.${headerNameD}.${scanTimeStr.replace(/:/g, "")}`;
             rowDetailData[j] = `Kunjungan_Images/${fileNameD}.jpg`;
           }
         }
