@@ -1,32 +1,28 @@
-/**
- * BACKEND GOOGLE APPS SCRIPT (GAS) - STANDALONE VERSION (LUAR PULAU)
- * --------------------------------------------------------------------------
- * Dibuat langsung dari Standalone Apps Script (script.google.com) milik Akun B.
- * Google Sheet milik Akun A tetap BERSIH murni (tanpa Extension Apps Script).
- */
+const SECRET_TOKEN = "VISIT_SECRET_KEY_2026";
+const SHEET_KUNJUNGAN = "Kunjungan";
+const SHEET_MASTER_TOKO = "Master_Toko";
+const SHEET_DETAIL_AUDIT = "Detail Audit";
+const SHEET_MASTER_PRODUK = "Master_Produk";
+const SPREADSHEET_MASTER_PRODUK_ID = "1qWupc78oFaCpqc1oki9BLsn2BPWAGR31743LHL8qMSQ";
 
-// KONFIGURASI UTAMA SPREADSHEET & MULTI-REGION MAP
-const SECRET_TOKEN = "VISIT_SECRET_KEY_2026"; // Secret Token Frontend
-const SHEET_KUNJUNGAN = "Kunjungan"; // Nama Sheet Kunjungan Utama
-const SHEET_MASTER_TOKO = "Master_Toko"; // Nama Sheet Master Toko
-const SHEET_DETAIL_AUDIT = "Detail Audit"; // Nama Sheet Detail Visit (Tab 2)
-const SHEET_MASTER_PRODUK = "Master_Produk"; // Nama Sheet Master Produk
-const SPREADSHEET_MASTER_PRODUK_ID =
-  "1qWupc78oFaCpqc1oki9BLsn2BPWAGR31743LHL8qMSQ"; // ID Spreadsheet Master Produk Akun B
-
-// MAP REGION SPREADSHEETS (PUSAT DI 1 FILE GAS)
 const REGION_SPREADSHEETS = {
   LUAR_PULAU: {
-    spreadsheetId: "1kUWJIQxtSkjebZMualR2bIV6HyGxp-baDVz1s-7KspU", // LP4_Data Internal (AppSheet 05. RO MDS LP 4)
+    spreadsheetId: "1kUWJIQxtSkjebZMualR2bIV6HyGxp-baDVz1s-7KspU",
     folderFotoId: "1vFpmiVzhu3qSZCxH938ORtEtaUa3cjqo",
     folderFotoName: "Foto_Kunjungan_App_Luar_Pulau",
     photoPrefix: "MDS LP4_",
   },
   LUAR_PULAU_BARU: {
-    spreadsheetId: "1S__W_tKymV2xwqx_-vthpPt5jn5u7t3ePlgPqM1opMM", // LP3_Data Internal (AppSheet 05. RO MDS LP 3)
+    spreadsheetId: "1356ZShL_ZQaO0pwI7msWcQmINpyKCxhizMzt8c5cKpo",
     folderFotoId: "1vFpmiVzhu3qSZCxH938ORtEtaUa3cjqo",
-    folderFotoName: "Foto_Kunjungan_App_Luar_Pulau_Baru",
-    photoPrefix: "MDS LP3_",
+    folderFotoName: "Foto_Kunjungan_App_Luar_Pulau_LP1",
+    photoPrefix: "MDS LP1_",
+  },
+  LUAR_PULAU_LP2: {
+    spreadsheetId: "1Dy6Zb6e9eWLOuLcWaUiKYWpIuv2mpz-leGJwiJu20Ss",
+    folderFotoId: "1vFpmiVzhu3qSZCxH938ORtEtaUa3cjqo",
+    folderFotoName: "Foto_Kunjungan_App_Luar_Pulau",
+    photoPrefix: "MDS LP2_",
   },
   DALAM_PULAU: {
     spreadsheetId: "1asDdjDm0kUfFmICLtkhJ5VBhmKUels2c-H8Cd22qYvk",
@@ -36,30 +32,22 @@ const REGION_SPREADSHEETS = {
   },
 };
 
-/**
- * Helper Membuka Spreadsheet Berdasarkan Region (Standalone Script)
- */
 function getTargetSpreadsheet(region = "LUAR_PULAU") {
   const regConfig =
     REGION_SPREADSHEETS[region] || REGION_SPREADSHEETS.LUAR_PULAU;
   return SpreadsheetApp.openById(regConfig.spreadsheetId);
 }
 
-/**
- * Helper Mendapatkan Folder Google Drive Berdasarkan Region
- */
 function getTargetFolder(region = "LUAR_PULAU") {
   const regConfig =
     REGION_SPREADSHEETS[region] || REGION_SPREADSHEETS.LUAR_PULAU;
 
-  // Opsi 1: Coba ambil folder by ID (paling presisi)
   if (regConfig.folderFotoId && regConfig.folderFotoId.trim() !== "") {
     try {
       return DriveApp.getFolderById(regConfig.folderFotoId.trim());
     } catch (e) {}
   }
 
-  // Opsi 2: Cari by nama, atau buat baru
   try {
     const folders = DriveApp.getFoldersByName(regConfig.folderFotoName);
     if (folders.hasNext()) {
@@ -68,18 +56,13 @@ function getTargetFolder(region = "LUAR_PULAU") {
     return DriveApp.createFolder(regConfig.folderFotoName);
   } catch (err) {}
 
-  // Opsi 3: Fallback root — kalau ini juga gagal, return null (JANGAN throw)
   try {
     return DriveApp.getRootFolder();
   } catch (e) {}
 
-  // Semua DriveApp access gagal (permission error Akun B) → return null safely
   return null;
 }
 
-/**
- * Helper Ambil Data Master Produk (Dynamic Mapping dari Spreadsheet Akun B)
- */
 function fetchMasterProdukData(callback = "") {
   let ss;
   try {
@@ -117,9 +100,6 @@ function fetchMasterProdukData(callback = "") {
   );
 }
 
-/**
- * Helper Ambil Data Master Toko Berdasarkan Region
- */
 function fetchMasterTokoData(region = "LUAR_PULAU", callback = "") {
   const ss = getTargetSpreadsheet(region);
   const sheet = ss.getSheetByName(SHEET_MASTER_TOKO);
@@ -140,20 +120,18 @@ function fetchMasterTokoData(region = "LUAR_PULAU", callback = "") {
   }
 
   const result = [];
-
-  // Map baris master toko (Mulai baris index 1)
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    if (!row[1] && !row[2]) continue; // Skip jika kode/nama toko kosong
+    if (!row[1] && !row[2]) continue;
 
     result.push({
-      account: String(row[0] || ""), // Kolom A (ACCOUNT)
-      kodeToko: String(row[1] || ""), // Kolom B (KODE TOKO)
-      namaToko: String(row[2] || ""), // Kolom C (NAMA TOKO)
-      kodeCrew: String(row[3] || ""), // Kolom D (KODE CREW)
-      namaCrew: String(row[4] || ""), // Kolom E (NAMA CREW)
-      rute: String(row[5] || ""), // Kolom F (RUTE)
-      tipeToko: String(row[6] || ""), // Kolom G (TIPE TOKO)
+      account: String(row[0] || ""),
+      kodeToko: String(row[1] || ""),
+      namaToko: String(row[2] || ""),
+      kodeCrew: String(row[3] || ""),
+      namaCrew: String(row[4] || ""),
+      rute: String(row[5] || ""),
+      tipeToko: String(row[6] || ""),
     });
   }
 
@@ -162,9 +140,6 @@ function fetchMasterTokoData(region = "LUAR_PULAU", callback = "") {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * Helper Label Kolom Foto Sesuai Format Native AppSheet
- */
 function getAppSheetPhotoLabel(colIndex) {
   const colNum = colIndex + 1;
   if (colNum === 15) return "FOTO SELFIE (DEPAN TOKO)";
@@ -173,7 +148,6 @@ function getAppSheetPhotoLabel(colIndex) {
   if (colNum === 25) return "FOTO ASSET 2";
   if (colNum === 27) return "FOTO UPDATE PLANOGRAM";
 
-  // Promo Khusus
   if (colNum === 141) return "FOTO PSM 1";
   if (colNum === 142) return "FOTO PSM 2";
   if (colNum === 161) return "FOTO MURAH 1";
@@ -185,30 +159,22 @@ function getAppSheetPhotoLabel(colIndex) {
   if (colNum === 221) return "FOTO GANTUNG 1";
   if (colNum === 222) return "FOTO GANTUNG 2";
 
-  // Before / After (Col 224 - 235)
   if (colNum >= 224 && colNum <= 229) return `FOTO BEFORE ${colNum - 223}`;
   if (colNum >= 230 && colNum <= 235) return `FOTO AFTER ${colNum - 229}`;
 
-  // HYSU
   if (colNum === 236) return "FOTO HYSU";
 
-  // Rak Reguler (Col 237 - 251)
   if (colNum >= 237 && colNum <= 251) return `FOTO RAK REG ${colNum - 236}`;
 
-  // Extra Display (Col 252 - 255)
   if (colNum >= 252 && colNum <= 255) return `FOTO EXTRA ${colNum - 251}`;
 
   return `FOTO COL ${colNum}`;
 }
 
-/**
- * Listener HTTP GET - Mengambil Data Master Toko & Master Produk (Sesuai Pola gas.js)
- */
 function doGet(e) {
   try {
     const action = e && e.parameter ? e.parameter.action : "";
 
-    // Action 1: Ambil Master Toko dari Sheet Master_Toko Sesuai Region
     if (action === "getMasterToko") {
       const region =
         e && e.parameter && e.parameter.region
@@ -217,12 +183,10 @@ function doGet(e) {
       return fetchMasterTokoData(region);
     }
 
-    // Action 2: Ambil Master Produk dari Sheet Master_Produk
     if (action === "getMasterProduk") {
       return fetchMasterProdukData();
     }
 
-    // Action 3: getVisitedToday via GET (100% Bebas CORS Blocked Error di Browser)
     if (action === "getVisitedToday") {
       const token = e && e.parameter ? e.parameter.secret_token : "";
       if (token !== SECRET_TOKEN) {
@@ -236,7 +200,7 @@ function doGet(e) {
         .trim()
         .toLowerCase();
       const visitedCodes = [];
-      const regionsToScan = ["LUAR_PULAU", "LUAR_PULAU_BARU", "DALAM_PULAU"];
+      const regionsToScan = ["LUAR_PULAU", "LUAR_PULAU_BARU", "LUAR_PULAU_LP2", "DALAM_PULAU"];
 
       regionsToScan.forEach((reg) => {
         try {
@@ -245,12 +209,6 @@ function doGet(e) {
           const lastRow = sheet.getLastRow();
           if (lastRow >= 2) {
             const tz = ss.getSpreadsheetTimeZone();
-            const todayDateStr = Utilities.formatDate(
-              new Date(),
-              tz,
-              "dd/MM/yyyy",
-            );
-
             const range = sheet.getRange(2, 1, lastRow - 1, 14);
             const values = range.getValues();
 
@@ -306,9 +264,6 @@ function doGet(e) {
   }
 }
 
-/**
- * Helper Memeriksa Apakah Tanggal Adalah Hari Ini (Super Fleksibel untuk M/d/yyyy, dd/MM/yyyy, yyyy-MM-dd, Date Object)
- */
 function isDateToday(rawDate, tz) {
   if (!rawDate) return false;
   const now = new Date();
@@ -351,15 +306,11 @@ function isDateToday(rawDate, tz) {
   return false;
 }
 
-/**
- * Listener HTTP POST - Menerima & Menyimpan Payload Data 244 Kolom + Foto Base64
- */
 function doPost(e) {
+  const lock = LockService.getScriptLock();
   try {
-    // Parse JSON Payload
     const requestData = JSON.parse(e.postData.contents || "{}");
 
-    // Check if request is action getMasterToko / getMasterProduk via POST (Read-only — No Lock Needed)
     if (requestData.action === "getMasterToko") {
       const region = requestData.region || "LUAR_PULAU";
       return fetchMasterTokoData(region, requestData.callback || "");
@@ -368,7 +319,6 @@ function doPost(e) {
       return fetchMasterProdukData(requestData.callback || "");
     }
 
-    // Action: getVisitedToday (Read-only — No Lock Needed)
     if (requestData.action === "getVisitedToday") {
       const token = requestData.secret_token;
       if (token !== SECRET_TOKEN) {
@@ -382,7 +332,7 @@ function doPost(e) {
         .trim()
         .toLowerCase();
       const visitedCodes = [];
-      const regionsToScan = ["LUAR_PULAU", "LUAR_PULAU_BARU", "DALAM_PULAU"];
+      const regionsToScan = ["LUAR_PULAU", "LUAR_PULAU_BARU", "LUAR_PULAU_LP2", "DALAM_PULAU"];
 
       regionsToScan.forEach((reg) => {
         try {
@@ -391,7 +341,7 @@ function doPost(e) {
           const lastRow = sheet.getLastRow();
           if (lastRow >= 2) {
             const tz = ss.getSpreadsheetTimeZone();
-            const range = sheet.getRange(2, 1, lastRow - 1, 14); // kolom 1-14
+            const range = sheet.getRange(2, 1, lastRow - 1, 14);
             const values = range.getValues();
 
             values.forEach((row) => {
@@ -429,19 +379,15 @@ function doPost(e) {
       });
     }
 
-    // 🔒 PROSES WRITE DATA KUNJUNGAN (Memerlukan Script Lock)
-    const lock = LockService.getScriptLock();
     try {
       lock.waitLock(30000);
     } catch (lockErr) {
       return createJsonResponse({
         status: "error",
-        message:
-          "Sistem sedang sibuk memproses pengiriman data lain. Silakan coba lagi.",
+        message: "Sistem sedang sibuk memproses pengiriman data lain. Silakan coba lagi.",
       });
     }
 
-    // 1. Verifikasi Secret Token
     const secretToken = requestData.secret_token;
     if (secretToken !== SECRET_TOKEN) {
       return createJsonResponse({
@@ -463,14 +409,9 @@ function doPost(e) {
       REGION_SPREADSHEETS[region] || REGION_SPREADSHEETS["LUAR_PULAU"];
     const photoPrefix = regConfig.photoPrefix || "";
 
-    // Buka Sheet Target Berdasarkan Region (LUAR_PULAU / LUAR_PULAU_BARU / DALAM_PULAU)
     const ss = getTargetSpreadsheet(region);
-    let sheet = ss.getSheetByName(SHEET_KUNJUNGAN);
-    if (!sheet) {
-      sheet = ss.getSheets()[0];
-    }
+    let sheet = ss.getSheetByName(SHEET_KUNJUNGAN) || ss.getSheets()[0];
 
-    // 2. Gunakan ID_VISIT Konsisten dari Frontend dengan Prefix AppSheet Native (MDS LP4_ / MDS LP3_ / MDS DK1_)
     let rawHexId = (requestData.id_visit || requestData.idVisit || "")
       .toString()
       .trim()
@@ -482,36 +423,38 @@ function doPost(e) {
       rawHexId = generateUniqueIdVisit(sheet).toLowerCase();
     }
 
-    // ID_VISIT lengkap untuk Kolom A: MDS LP4_9cd19965 / MDS DK1_e6863579
     const idVisit = `${photoPrefix}${rawHexId}`;
-    rowData[0] = idVisit; // Set Kolom Index 1 (ID_VISIT)
+    rowData[0] = idVisit;
 
-    // 3. Set Tanggal & Waktu Presisi Native AppSheet (Wajib Ada Detik HH:mm:ss)
     const now = new Date();
-    const tz = ss.getSpreadsheetTimeZone();
+    const tz = ss.getSpreadsheetTimeZone() || "Asia/Makassar";
 
-    // Format Waktu: Jika dari frontend cuma "17:20", tambahkan detik random (01-59)
     let finalTimeStr = rowData[2] ? rowData[2].toString().trim() : "";
-    if (!finalTimeStr) {
-      finalTimeStr = Utilities.formatDate(now, tz, "HH:mm:ss");
-    } else if (/^\d{1,2}:\d{2}$/.test(finalTimeStr)) {
-      // Format "HH:mm" atau "H:mm" -> Tambah detik random "HH:mm:ss"
-      const randomSec = Math.floor(Math.random() * 58 + 1)
-        .toString()
-        .padStart(2, "0");
-      finalTimeStr = `${finalTimeStr}:${randomSec}`;
+    if (finalTimeStr) {
+      const parts = finalTimeStr.split(":");
+      if (parts.length >= 2) {
+        const h = parseInt(parts[0], 10);
+        const m = parts[1].padStart(2, "0");
+        const s = parts[2]
+          ? parts[2].padStart(2, "0")
+          : Math.floor(Math.random() * 58 + 1)
+              .toString()
+              .padStart(2, "0");
+        finalTimeStr = `${h}:${m}:${s}`;
+      }
+    } else {
+      finalTimeStr = Utilities.formatDate(now, tz, "H:mm:ss");
     }
-    rowData[2] = finalTimeStr; // Index 3: WAKTU (Kolom C) -> "17:20:43"
+    rowData[2] = finalTimeStr;
 
-    // Format Tanggal: Presisi M/d/yyyy (misal "8/14/2026") TANPA pergeseran jam/zona waktu
     let dateFormattedMdy = "";
     let finalDateStrRaw = rowData[3] ? rowData[3].toString().trim() : "";
     if (finalDateStrRaw && finalDateStrRaw.includes("/")) {
       const parts = finalDateStrRaw.split("/");
       if (parts.length === 3) {
-        let m = parseInt(parts[0]);
-        let d = parseInt(parts[1]);
-        let y = parseInt(parts[2]);
+        let m = parseInt(parts[0], 10);
+        let d = parseInt(parts[1], 10);
+        let y = parseInt(parts[2], 10);
         if (m > 12) {
           const tmp = m;
           m = d;
@@ -525,7 +468,6 @@ function doPost(e) {
     }
     rowData[3] = dateFormattedMdy;
 
-    // 4. Dapatkan Folder Google Drive & Header Baris 1
     const driveFolder = getTargetFolder(region);
     const driveFolderAvailable = driveFolder !== null;
     let sheetHeaders = [];
@@ -535,19 +477,15 @@ function doPost(e) {
         .getValues()[0];
     }
 
-    // 5. Pre-calculate Path Foto & Ganti Base64 dengan Text Path AppSheet
     const pendingPhotos = [];
     let photosSuccess = 0;
     let photosTotal = 0;
     const photoDetails = [];
 
-    const timePartsStr = rowData[2].toString().split(":");
-    let photoHour = parseInt(timePartsStr[0]) || 12;
-    let photoMin = parseInt(timePartsStr[1]) || 0;
-    let photoSec = parseInt(timePartsStr[2]) || 0;
-
-    const photoDateObj = new Date();
-    photoDateObj.setHours(photoHour, photoMin, photoSec, 0);
+    const timePartsStr = finalTimeStr.split(":");
+    let runningHour = parseInt(timePartsStr[0], 10) || 12;
+    let runningMin = parseInt(timePartsStr[1], 10) || 0;
+    let runningSec = parseInt(timePartsStr[2], 10) || 0;
     let photoIndex = 0;
 
     for (let i = 0; i < rowData.length; i++) {
@@ -557,15 +495,19 @@ function doPost(e) {
         if (photoIndex > 0) {
           const secAdd =
             Math.random() < 0.45 ? 0 : Math.floor(Math.random() * 3 + 1);
-          photoDateObj.setSeconds(photoDateObj.getSeconds() + secAdd);
+          runningSec += secAdd;
+          if (runningSec >= 60) {
+            runningSec -= 60;
+            runningMin += 1;
+            if (runningMin >= 60) {
+              runningMin -= 60;
+              runningHour = (runningHour + 1) % 24;
+            }
+          }
         }
         photoIndex++;
 
-        const currentPhotoTimeHHMMSS = Utilities.formatDate(
-          photoDateObj,
-          tz,
-          "HHmmss",
-        );
+        const currentPhotoTimeHHMMSS = `${String(runningHour).padStart(2, "0")}${String(runningMin).padStart(2, "0")}${String(runningSec).padStart(2, "0")}`;
         const headerName =
           sheetHeaders[i] && sheetHeaders[i].toString().trim() !== ""
             ? sheetHeaders[i].toString().trim()
@@ -590,7 +532,6 @@ function doPost(e) {
       }
     }
 
-    // Cek Anti-Duplikat pada Sheet
     let isVisitAlreadyInserted = false;
     if (sheet.getLastRow() > 1) {
       const existingVisitIds = sheet
@@ -615,7 +556,6 @@ function doPost(e) {
       });
     }
 
-    // 6. SIMPAN BARIS UTAMA KE SHEET KUNJUNGAN
     const maxSheetCols = Math.max(1, sheet.getMaxColumns());
     let cleanRowData = rowData;
     if (cleanRowData.length > maxSheetCols) {
@@ -632,13 +572,16 @@ function doPost(e) {
     sheet.appendRow(cleanRowData);
     try {
       const lastR = sheet.getLastRow();
-      // Paksa SELURUH sel dalam baris menjadi Plain Text '@' (Rata Kiri, persis AppSheet Native)
-      sheet.getRange(lastR, 1, 1, cleanRowData.length).setNumberFormat("@");
-      // Khusus Tanggal (Kolom D / Index 4), set format M/d/yyyy
-      sheet.getRange(lastR, 4).setNumberFormat("M/d/yyyy");
+      const rowRange = sheet.getRange(lastR, 1, 1, cleanRowData.length);
+      rowRange.setNumberFormat("@");
+      rowRange.setHorizontalAlignment("left");
+      rowRange.setVerticalAlignment("bottom");
+
+      sheet.getRange(lastR, 2).setHorizontalAlignment("left").setVerticalAlignment("bottom");
+      sheet.getRange(lastR, 3).setNumberFormat("H:mm:ss").setHorizontalAlignment("left").setVerticalAlignment("bottom").setValue(finalTimeStr);
+      sheet.getRange(lastR, 4).setNumberFormat("M/d/yyyy").setHorizontalAlignment("right").setVerticalAlignment("bottom").setValue(dateFormattedMdy);
     } catch (eFmt) {}
 
-    // 7. SIMPAN BARIS DETAIL KE SHEET DETAIL AUDIT
     let detailSheet = null;
     const rowDetailList =
       requestData.row_detail_list ||
@@ -658,15 +601,13 @@ function doPost(e) {
       );
       const itemCount = validDetailRows.length;
 
-      const timeParts = rowData[2].toString().split(":");
-      const mainHour = parseInt(timeParts[0]) || 12;
-      const mainMin = parseInt(timeParts[1]) || 0;
-      const mainSec = parseInt(timeParts[2]) || 0;
+      const timeParts = finalTimeStr.split(":");
+      const mainHour = parseInt(timeParts[0], 10) || 12;
+      const mainMin = parseInt(timeParts[1], 10) || 0;
+      const mainSec = parseInt(timeParts[2], 10) || 0;
 
-      const mainDateObj = new Date();
-      mainDateObj.setHours(mainHour, mainMin, mainSec, 0);
-
-      let currentScanTimeMs = mainDateObj.getTime() - itemCount * (35 * 1000);
+      let totalCurrentSec = (mainHour * 3600 + mainMin * 60 + mainSec) - (itemCount * 15);
+      if (totalCurrentSec < 0) totalCurrentSec = 0;
 
       let detailSheetHeaders = [];
       if (detailSheet.getLastRow() >= 1) {
@@ -698,23 +639,17 @@ function doPost(e) {
         rowDetailData[1] = idVisit;
         rowDetailData[2] = rowData[1];
 
-        const jitterSec = Math.floor(Math.random() * 30 + 25);
-        currentScanTimeMs += jitterSec * 1000;
+        totalCurrentSec += Math.floor(Math.random() * 12 + 8);
+        const maxSecLimit = (mainHour * 3600 + mainMin * 60 + mainSec);
+        if (totalCurrentSec > maxSecLimit) totalCurrentSec = maxSecLimit;
 
-        if (currentScanTimeMs > mainDateObj.getTime()) {
-          currentScanTimeMs =
-            mainDateObj.getTime() - (itemCount - idx) * 15 * 1000;
-        }
-
-        const scanDateObj = new Date(currentScanTimeMs);
-        const scanTimeStr = Utilities.formatDate(
-          scanDateObj,
-          ss.getSpreadsheetTimeZone(),
-          "HH:mm:ss",
-        );
+        const sHour = Math.floor(totalCurrentSec / 3600) % 24;
+        const sMin = Math.floor((totalCurrentSec % 3600) / 60);
+        const sSec = totalCurrentSec % 60;
+        const scanTimeStr = `${sHour}:${String(sMin).padStart(2, "0")}:${String(sSec).padStart(2, "0")}`;
 
         rowDetailData[3] = scanTimeStr;
-        rowDetailData[4] = rowData[3];
+        rowDetailData[4] = dateFormattedMdy;
 
         for (let j = 0; j < rowDetailData.length; j++) {
           const valD = rowDetailData[j];
@@ -746,14 +681,18 @@ function doPost(e) {
         detailSheet.appendRow(cleanRow);
         try {
           const lastDR = detailSheet.getLastRow();
-          detailSheet.getRange(lastDR, 1, 1, cleanRow.length).setNumberFormat("@");
-          detailSheet.getRange(lastDR, 4).setNumberFormat("HH:mm:ss");
-          detailSheet.getRange(lastDR, 5).setNumberFormat("M/d/yyyy");
+          const detailRowRange = detailSheet.getRange(lastDR, 1, 1, cleanRow.length);
+          detailRowRange.setNumberFormat("@");
+          detailRowRange.setHorizontalAlignment("left");
+          detailRowRange.setVerticalAlignment("bottom");
+
+          detailSheet.getRange(lastDR, 3).setHorizontalAlignment("left").setVerticalAlignment("bottom");
+          detailSheet.getRange(lastDR, 4).setNumberFormat("H:mm:ss").setHorizontalAlignment("left").setVerticalAlignment("bottom").setValue(scanTimeStr);
+          detailSheet.getRange(lastDR, 5).setNumberFormat("M/d/yyyy").setHorizontalAlignment("right").setVerticalAlignment("bottom").setValue(dateFormattedMdy);
         } catch (eFmtD) {}
       });
     }
 
-    // 8. PROSES FOTO DRIVE SETELAH DATA SHEET SUKSES 100% TERULIS
     if (driveFolderAvailable && pendingPhotos.length > 0) {
       pendingPhotos.forEach((item) => {
         const saveRes = saveBase64ToDrive(
@@ -769,7 +708,6 @@ function doPost(e) {
       });
     }
 
-    // 9. Auto-Sort Seluruh Baris Berdasarkan Tanggal & Waktu
     const lastRow = sheet.getLastRow();
     const lastCol = sheet.getLastColumn();
     if (lastRow > 2 && lastCol > 0) {
@@ -814,13 +752,12 @@ function doPost(e) {
       message: "Server Error: " + err.toString(),
     });
   } finally {
-    lock.releaseLock();
+    try {
+      lock.releaseLock();
+    } catch (e) {}
   }
 }
 
-/**
- * Membuat ID_VISIT 8-karakter hex unik dengan loop collision check di kolom A
- */
 function generateUniqueIdVisit(sheet) {
   let unique = false;
   let id = "";
@@ -844,9 +781,6 @@ function generateUniqueIdVisit(sheet) {
   return id;
 }
 
-/**
- * Menyimpan String Gambar Base64 ke Google Drive
- */
 function saveBase64ToDrive(base64Data, folder, fileName) {
   const parts = base64Data.split(",");
   const contentType = parts[0].split(";")[0].replace("data:", "");
@@ -863,7 +797,6 @@ function saveBase64ToDrive(base64Data, folder, fileName) {
   const blob = Utilities.newBlob(decodedData, contentType, fullFileName);
   let isUploaded = false;
 
-  // Direct Upload ke Drive (Super Kencang ~0.3s per foto)
   try {
     folder.createFile(blob);
     isUploaded = true;
@@ -877,9 +810,6 @@ function saveBase64ToDrive(base64Data, folder, fileName) {
   };
 }
 
-/**
- * Helper Output Response JSON (Mendukung JSONP Callback jika ada)
- */
 function createJsonResponse(obj, callback = "") {
   const jsonString = JSON.stringify(obj);
   if (callback && String(callback).trim() !== "") {
