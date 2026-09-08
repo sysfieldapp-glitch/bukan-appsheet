@@ -898,7 +898,8 @@
       DALAM_PULAU: '1asDdjDm0kUfFmICLtkhJ5VBhmKUels2c-H8Cd22qYvk'
     };
     const REGION_GIDS = {
-      LUAR_PULAU_LP2: '601188962'
+      LUAR_PULAU_LP2: '601188962',
+      DALAM_PULAU: '601188962'
     };
     const MASTER_TOKO_SHEET_NAME = 'Master_Toko';
     let currentGpsCoords = { lat: null, lng: null, accuracy: null };
@@ -1167,6 +1168,24 @@
       'RO033': 'AHMAD GHOZALI',
     };
 
+    function dedupStoreList(storeList) {
+      if (!Array.isArray(storeList)) return [];
+      const seen = new Map();
+      storeList.forEach(s => {
+        const key = String(s.kodeToko || s.namaToko || '').trim().toUpperCase();
+        if (!key) return;
+        if (seen.has(key)) {
+          const existing = seen.get(key);
+          if (s.rute) existing.rute = s.rute;
+          if (s.tipeToko && s.tipeToko !== '-') existing.tipeToko = s.tipeToko;
+          if (s.account) existing.account = s.account;
+        } else {
+          seen.set(key, Object.assign({}, s));
+        }
+      });
+      return Array.from(seen.values());
+    }
+
     function lookupCrewById(idCrew) {
       if (!idCrew) return null;
       const cleanId = String(idCrew).trim().toLowerCase();
@@ -1174,6 +1193,7 @@
       // 1. Coba pencocokan langsung kodeCrew (misal s.kodeCrew === 'RO036')
       let stores = masterTokoData.filter(s => s.kodeCrew && String(s.kodeCrew).trim().toLowerCase() === cleanId);
       if (stores.length > 0) {
+        stores = dedupStoreList(stores);
         return {
           namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
           kodeCrew: String(stores[0].kodeCrew || idCrew),
@@ -1187,6 +1207,7 @@
         const aliasClean = aliasName.toLowerCase();
         stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(aliasClean));
         if (stores.length > 0) {
+          stores = dedupStoreList(stores);
           return {
             namaCrew: aliasName,
             kodeCrew: idCrew.toUpperCase(),
@@ -1198,6 +1219,7 @@
       // 3. Coba pencocokan namaCrew (misal input 'YOHANDI' atau 'PRATAMA')
       stores = masterTokoData.filter(s => s.namaCrew && String(s.namaCrew).trim().toLowerCase().includes(cleanId));
       if (stores.length > 0) {
+        stores = dedupStoreList(stores);
         return {
           namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
           kodeCrew: idCrew.toUpperCase(),
@@ -1213,6 +1235,7 @@
       });
 
       if (stores.length > 0) {
+        stores = dedupStoreList(stores);
         return {
           namaCrew: String(stores[0].namaCrew || idCrew.toUpperCase()),
           kodeCrew: idCrew.toUpperCase(),
@@ -2516,6 +2539,7 @@
       };
 
       const result = [];
+      const seenMap = new Map();
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -2528,19 +2552,36 @@
         if (clean[0].length > 80 || clean[0].includes('ALFAMART ALFAMART') || clean[0].toUpperCase().includes('ACCOUNT ALFAMART')) continue;
         if (clean[0].toUpperCase().includes('ACCOUNT') && clean[1].toUpperCase().includes('KODE')) continue;
 
-        const kodeToko = clean[1] || '';
-        const namaToko = clean[2] || '';
+        const kodeToko = (clean[1] || '').trim();
+        const namaToko = (clean[2] || '').trim();
         if (!kodeToko && !namaToko) continue;
 
-        result.push({
-          account: clean[0] || '',
-          kodeToko: kodeToko,
-          namaToko: namaToko,
-          kodeCrew: clean[3] || '',
-          namaCrew: clean[4] || '',
-          rute: clean[5] || '',
-          tipeToko: clean[6] || ''
-        });
+        const kodeCrew = (clean[3] || '').trim();
+        const namaCrew = (clean[4] || '').trim();
+        const rute = (clean[5] || '').trim();
+        const tipeToko = (clean[6] || '').trim();
+        const account = (clean[0] || '').trim();
+
+        const dedupKey = `${kodeCrew.toLowerCase()}_${kodeToko.toUpperCase()}_${namaToko.toLowerCase()}`;
+
+        if (seenMap.has(dedupKey)) {
+          const existing = seenMap.get(dedupKey);
+          if (rute) existing.rute = rute;
+          if (tipeToko && tipeToko !== '-') existing.tipeToko = tipeToko;
+          if (account) existing.account = account;
+        } else {
+          const storeItem = {
+            account: account,
+            kodeToko: kodeToko,
+            namaToko: namaToko,
+            kodeCrew: kodeCrew,
+            namaCrew: namaCrew,
+            rute: rute,
+            tipeToko: tipeToko
+          };
+          seenMap.set(dedupKey, storeItem);
+          result.push(storeItem);
+        }
       }
       return result;
     }
