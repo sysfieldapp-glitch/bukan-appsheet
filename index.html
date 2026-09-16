@@ -1456,6 +1456,27 @@
         `;
       };
 
+      // 0. RENDER INDOMARET AUTO SCRAPER BANNER IF ANY INDOMARET STORES EXIST TODAY
+      const idmCount = filteredStores.filter(s => String(s.account || '').toUpperCase().includes('INDOMARET') || String(s.namaToko || '').toUpperCase().includes('INDOMARET')).length;
+      if (idmCount > 0) {
+        const idmBtnHtml = `
+          <div class="bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between gap-3 mb-1">
+            <div class="space-y-0.5 min-w-0">
+              <div class="text-xs font-black flex items-center gap-1.5 flex-wrap">
+                <span>🏪 Auto Scraper Indomaret</span>
+                <span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">${idmCount} Toko Rute</span>
+              </div>
+              <p class="text-[11px] text-blue-100 font-medium truncate">Tarik otomatis harga & stok toko Indomaret hari ini</p>
+            </div>
+            <button type="button" onclick="triggerIdmScrapeQueue()" class="px-3.5 py-2 bg-white hover:bg-blue-50 text-blue-700 font-extrabold text-xs rounded-xl shadow-sm transition-all whitespace-nowrap flex items-center space-x-1 shrink-0">
+              <i data-lucide="zap" class="w-3.5 h-3.5 fill-blue-600"></i>
+              <span>Scrape Sekarang</span>
+            </button>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', idmBtnHtml);
+      }
+
       // 1. RENDER PENDING STORES FIRST AT THE TOP
       pendingStores.forEach(item => {
         container.insertAdjacentHTML('beforeend', renderCardItem(item));
@@ -1672,6 +1693,26 @@
       return list;
     }
 
+    // TRIGGER INDOMARET TAMPERMONKEY SCRAPE QUEUE
+    function triggerIdmScrapeQueue() {
+      const activeStores = window.activeFilteredStores || masterTokoData || [];
+      const idmStores = activeStores
+        .filter(s => String(s.account || '').toUpperCase().includes('INDOMARET') || String(s.namaToko || '').toUpperCase().includes('INDOMARET'))
+        .map(s => String(s.kodeToko || '').trim().toUpperCase())
+        .filter(Boolean);
+
+      if (idmStores.length === 0) {
+        alert('Tidak ada toko Indomaret dalam rute Anda hari ini!');
+        return;
+      }
+
+      // Dispatch event to Tampermonkey
+      window.dispatchEvent(new CustomEvent('START_IDM_SCRAPING', {
+        detail: { storeCodes: idmStores }
+      }));
+    }
+    window.triggerIdmScrapeQueue = triggerIdmScrapeQueue;
+
     // TAB 2: LOAD SCRAPER PRODUCTS MATCHED BY BARCODE & STORE CODE
     async function loadTab2ScraperProducts(storeCode) {
       if (!storeCode) return;
@@ -1685,37 +1726,52 @@
         // Ekstrak 4-karakter kode toko murni (misal: "1Y09-MAPANGET RAYA" -> "1Y09")
         const code4Char = fullCode.split(/[-_\s\[]/)[0].trim();
 
-        // 1. Fetch store_index.json jika belum di-cache di memori
-        if (!cachedStoreIndexMap) {
-          const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
-          if (resIndex.ok) {
-            cachedStoreIndexMap = await resIndex.json();
-          }
-        }
+        const currentStore = (window.activeFilteredStores || masterTokoData || []).find(s => String(s.kodeToko || '').trim().toUpperCase() === fullCode);
+        const isIndomaret = (currentStore && String(currentStore.account || '').toUpperCase().includes('INDOMARET')) || (currentStore && String(currentStore.namaToko || '').toUpperCase().includes('INDOMARET'));
 
         let rawProducts = [];
-        let matchedRegionFile = null;
-        if (cachedStoreIndexMap) {
-          matchedRegionFile = cachedStoreIndexMap[fullCode] || cachedStoreIndexMap[code4Char];
-        }
 
-        if (matchedRegionFile) {
-          // 2. Fetch region JSON jika belum di-cache di memori
-          if (!cachedRegionJsonData[matchedRegionFile]) {
-            const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(matchedRegionFile));
-            if (resRegion.ok) {
-              cachedRegionJsonData[matchedRegionFile] = await resRegion.json();
+        if (isIndomaret) {
+          // 1. INDOMARET: Cek cache Tampermonkey / LocalStorage
+          try {
+            const idmData = JSON.parse(localStorage.getItem('IDM_SCRAPER_DATA') || '{}');
+            const match = idmData[fullCode] || idmData[code4Char];
+            if (match && Array.isArray(match.products) && match.products.length > 0) {
+              rawProducts = match.products;
+              console.log(`[Tab2 Scraper] Matched ${rawProducts.length} Indomaret items for store ${fullCode}`);
+            }
+          } catch (eIdm) { }
+        } else {
+          // 2. ALFAMART: Fetch store_index.json jika belum di-cache di memori
+          if (!cachedStoreIndexMap) {
+            const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
+            if (resIndex.ok) {
+              cachedStoreIndexMap = await resIndex.json();
             }
           }
 
-          if (cachedRegionJsonData[matchedRegionFile]) {
-            const rawStore = cachedRegionJsonData[matchedRegionFile].find(s => {
-              const sc = String(s.store_code || '').trim().toUpperCase();
-              return sc === fullCode || sc === code4Char;
-            });
-            if (rawStore && Array.isArray(rawStore.products)) {
-              rawProducts = rawStore.products;
-              console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
+          let matchedRegionFile = null;
+          if (cachedStoreIndexMap) {
+            matchedRegionFile = cachedStoreIndexMap[fullCode] || cachedStoreIndexMap[code4Char];
+          }
+
+          if (matchedRegionFile) {
+            if (!cachedRegionJsonData[matchedRegionFile]) {
+              const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(matchedRegionFile));
+              if (resRegion.ok) {
+                cachedRegionJsonData[matchedRegionFile] = await resRegion.json();
+              }
+            }
+
+            if (cachedRegionJsonData[matchedRegionFile]) {
+              const rawStore = cachedRegionJsonData[matchedRegionFile].find(s => {
+                const sc = String(s.store_code || '').trim().toUpperCase();
+                return sc === fullCode || sc === code4Char;
+              });
+              if (rawStore && Array.isArray(rawStore.products)) {
+                rawProducts = rawStore.products;
+                console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
+              }
             }
           }
         }
