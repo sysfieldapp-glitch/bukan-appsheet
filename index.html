@@ -134,18 +134,102 @@
         </div>
       </div>
 
-      <!-- TITLE SECTION (FIXED) -->
-      <div class="shrink-0 flex items-center justify-between px-1">
-        <div class="flex items-center space-x-2">
-          <i data-lucide="layout-grid" class="w-4 h-4 text-blue-600"></i>
-          <h3 class="text-sm font-bold text-slate-900">Daftar Toko Rute Hari Ini</h3>
-        </div>
-        <span id="dashRouteInfo" class="text-xs font-semibold text-slate-500">Rute Tgl --</span>
+      <!-- SUB-NAVIGATION DASHBOARD (RUTE TOKO vs KELOLA PROMO) -->
+      <div class="flex bg-slate-200/90 p-1 rounded-xl gap-1 font-bold text-xs sticky top-[57px] z-20 shadow-sm backdrop-blur-md">
+        <button type="button" id="subTabBtnRoute" onclick="switchDashboardSubTab('route')"
+          class="flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 bg-white text-blue-600 shadow-sm border border-slate-200">
+          <i data-lucide="store" class="w-3.5 h-3.5"></i>
+          <span>Rute Toko</span>
+        </button>
+        <button type="button" id="subTabBtnPromo" onclick="switchDashboardSubTab('promo')"
+          class="flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900">
+          <i data-lucide="tags" class="w-3.5 h-3.5"></i>
+          <span>Kelola Promo Master</span>
+        </button>
       </div>
 
-      <!-- STORE CARDS CONTAINER -->
-      <div id="storeCardsContainer" class="space-y-3 pb-8">
-        <!-- Rendered via JS -->
+      <!-- SUB-TAB 1: RUTE TOKO HARI INI -->
+      <div id="subTabContentRoute" class="space-y-3">
+        <!-- TITLE SECTION (FIXED) -->
+        <div class="shrink-0 flex items-center justify-between px-1">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-blue-600"></i>
+            <h3 class="text-sm font-bold text-slate-900">Daftar Toko Rute Hari Ini</h3>
+          </div>
+          <span id="dashRouteInfo" class="text-xs font-semibold text-slate-500">Rute Tgl --</span>
+        </div>
+
+        <!-- STORE CARDS CONTAINER -->
+        <div id="storeCardsContainer" class="space-y-3 pb-8">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- SUB-TAB 2: KELOLA PROMO MASTER PRODUK -->
+      <div id="subTabContentPromo" class="hidden space-y-3 pb-24">
+        <!-- HEADER & ACTIONS BANNER (STICKY / FROZEN) -->
+        <div class="bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-3.5 space-y-2.5 shadow-md sticky top-[102px] z-10">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                <span>Master Promo Produk Google Sheet</span>
+              </h3>
+              <p class="text-[10px] text-slate-500">Atur produk promo untuk Alfamart, Indomaret, Midi, Lawson, dll</p>
+            </div>
+            <button type="button" onclick="refreshPromoManagerFromGas()" id="btnSyncPromoManager" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg border border-slate-200 flex items-center space-x-1 transition-all">
+              <i data-lucide="refresh-cw" class="w-3 h-3 text-blue-600"></i>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- SEARCH BAR & RETAIL SUB-TABS -->
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+            <input type="text" id="inputSearchPromoManager" oninput="renderPromoManagerList()" placeholder="Cari nama produk atau barcode..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-blue-500 focus:outline-none">
+          </div>
+
+          <!-- RETAIL ACCOUNT SUB-TABS -->
+          <div class="flex bg-slate-100 p-1 rounded-xl gap-1 font-bold text-[11px] overflow-x-auto no-scrollbar border border-slate-200">
+            <button type="button" onclick="selectRetailPromoTab('ALFAMART')" id="retailTabBtn_ALFAMART" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-lg transition-all text-center bg-white text-blue-600 shadow-sm border border-slate-200">
+              🔴 Alfamart
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('INDOMARET')" id="retailTabBtn_INDOMARET" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🔵 Indomaret
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('ALFAMIDI')" id="retailTabBtn_ALFAMIDI" class="flex-1 min-w-[65px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🟠 Midi
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('LAWSON')" id="retailTabBtn_LAWSON" class="flex-1 min-w-[65px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🟢 Lawson
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('CIRCLE_K')" id="retailTabBtn_CIRCLE_K" class="flex-1 min-w-[70px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🟣 Circle K
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('FAMILY_MART')" id="retailTabBtn_FAMILY_MART" class="flex-1 min-w-[75px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🟡 FamMart
+            </button>
+            <button type="button" onclick="selectRetailPromoTab('ALL')" id="retailTabBtn_ALL" class="flex-1 min-w-[60px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
+              🌐 Semua
+            </button>
+          </div>
+
+          <!-- QUICK COUNTER & SAVE BUTTON -->
+          <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+            <div id="promoCounterBadge" class="text-[11px] font-bold text-slate-600">
+              <span class="text-amber-600 font-extrabold" id="countActivePromo">0</span> Promo Aktif (<span id="txtCurrentRetailTitle" class="font-extrabold text-blue-700">Alfamart</span>)
+            </div>
+            <button type="button" onclick="savePromoManagerToGas()" id="btnSavePromoManager" class="px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-md flex items-center space-x-1.5 transition-all">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              <span>Simpan ke Sheets</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- LIST PRODUK PROMO MANAGER CONTAINER -->
+        <div id="promoManagerContainer" class="space-y-2.5">
+          <!-- Rendered via JS -->
+        </div>
       </div>
     </div>
 
@@ -270,7 +354,7 @@
       <form id="visitForm" onsubmit="return false;" class="space-y-4">
 
         <!-- TAB 1: KUNJUNGAN & PROMO -->
-        <div id="tabMainContent" class="space-y-4">
+        <div id="tabMainContent" class="space-y-4 pb-28">
 
           <!-- SEKSI 1: IDENTITAS & MASTER TOKO -->
           <section class="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
@@ -660,7 +744,7 @@
         </div>
 
         <!-- TAB 2: DETAIL KUNJUNGAN (PRODUCT AUDIT & SHARE OF SHELF) -->
-        <div id="tabDetailContent" class="hidden space-y-4">
+        <div id="tabDetailContent" class="hidden space-y-4 pb-28">
 
           <!-- PRODUCT CARDS SEARCH & CONTAINER SECTION -->
           <section class="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-sm">
@@ -686,7 +770,7 @@
             </div>
 
             <!-- PRODUCT CARDS CONTAINER -->
-            <div id="productCardsContainer" class="space-y-2.5 max-h-[450px] overflow-y-auto pr-1 hide-scrollbar pt-1">
+            <div id="productCardsContainer" class="space-y-2.5 pt-1 pb-4">
               <!-- Rendered Product Cards via JS -->
             </div>
           </section>
@@ -852,40 +936,686 @@
     const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/sysfieldapp-glitch/agscrapper/main/data/';
     let cachedStoreIndexMap = null;
     let cachedRegionJsonData = {};
-    const PRODMAST_PROMO_URL = 'https://docs.google.com/spreadsheets/d/1FD2RN9XjxDk0cuhYTWIYhtdgob_GUx9EdGCtF1MVUbI/gviz/tq?tqx=out:csv&sheet=promo';
-    let cachedMasterPromoMap = null;
+    // MASTER PROMO STATE & GAS INTEGRATION
+    window.masterPromoList = [];
+    let isPromoManagerLoaded = false;
 
-    async function fetchMasterPromoLive() {
-      if (cachedMasterPromoMap) return cachedMasterPromoMap;
-      cachedMasterPromoMap = {};
+    // SUB-TAB DASHBOARD SWITCHER (RUTE TOKO vs KELOLA PROMO)
+    function switchDashboardSubTab(tab) {
+      const btnRoute = document.getElementById('subTabBtnRoute');
+      const btnPromo = document.getElementById('subTabBtnPromo');
+      const contentRoute = document.getElementById('subTabContentRoute');
+      const contentPromo = document.getElementById('subTabContentPromo');
+
+      if (tab === 'promo') {
+        if (btnRoute) btnRoute.className = 'flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900';
+        if (btnPromo) btnPromo.className = 'flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 bg-white text-blue-600 shadow-sm border border-slate-200';
+        if (contentRoute) contentRoute.classList.add('hidden');
+        if (contentPromo) contentPromo.classList.remove('hidden');
+        initPromoManager();
+      } else {
+        if (btnRoute) btnRoute.className = 'flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 bg-white text-blue-600 shadow-sm border border-slate-200';
+        if (btnPromo) btnPromo.className = 'flex-1 py-2 px-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-900';
+        if (contentRoute) contentRoute.classList.remove('hidden');
+        if (contentPromo) contentPromo.classList.add('hidden');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // HELPER CEK RENTANG TANGGAL PROMO (DD/MM/YYYY atau YYYY-MM-DD)
+    function isDateWithinPromoRange(startStr, endStr) {
+      if (!startStr && !endStr) return true; // Tidak ada batas tanggal = selalu aktif
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const parseDate = (dStr) => {
+        if (!dStr) return null;
+        const s = String(dStr).trim();
+        if (s.includes('/')) {
+          const parts = s.split('/');
+          if (parts.length === 3) {
+            return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+          }
+        } else if (s.includes('-')) {
+          const parts = s.split('-');
+          if (parts.length === 3) {
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          }
+        }
+        return null;
+      };
+
+      const startDate = parseDate(startStr);
+      const endDate = parseDate(endStr);
+
+      if (startDate && today < startDate) return false;
+      if (endDate && today > endDate) return false;
+      return true;
+    }
+
+    // INIT PROMO MANAGER DATA
+    async function initPromoManager() {
+      if (!isPromoManagerLoaded) {
+        await refreshPromoManagerFromGas();
+        isPromoManagerLoaded = true;
+      } else {
+        renderPromoManagerList();
+      }
+    }
+
+    // FETCH PROMO LIST FROM GAS
+    async function refreshPromoManagerFromGas() {
+      const btnSync = document.getElementById('btnSyncPromoManager');
+      if (btnSync) btnSync.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 text-blue-600 animate-spin"></i> <span>Loading...</span>`;
+      
+      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
+      let fetchedList = [];
+
       try {
-        const res = await fetch(PRODMAST_PROMO_URL);
+        const res = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getPromoList' })
+        });
         if (res.ok) {
-          const csvText = await res.text();
-          const lines = csvText.split(/\r?\n/);
-          lines.forEach((line, idx) => {
-            if (idx === 0) return;
-            const matches = line.match(/(?:^|,)("(?:[^"]|"")*"|[^,]*)/g);
-            if (matches && matches.length >= 5) {
-              const clean = (str) => (str || '').replace(/^,?"?|"$/g, '').replace(/""/g, '"').trim();
-              const barcode = clean(matches[0]);
-              const jenisPromo = clean(matches[2]);
-              const mulaiPromo = clean(matches[3]);
-              const akhirPromo = clean(matches[4]);
-              if (barcode) {
-                cachedMasterPromoMap[barcode] = {
-                  jenis_promo: jenisPromo,
-                  mulai_promo: mulaiPromo,
-                  akhir_promo: akhirPromo
-                };
-              }
-            }
+          const json = await res.json();
+          if (json.status === 'success' && Array.isArray(json.data)) {
+            fetchedList = json.data;
+          }
+        }
+      } catch (e) {
+        console.warn('Gagal fetch getPromoList dari GAS:', e);
+        try {
+          const localStr = localStorage.getItem('APP_MASTER_PROMO_CACHE');
+          if (localStr) fetchedList = JSON.parse(localStr);
+        } catch (eLoc) { }
+      }
+
+      const productsMap = window.masterProductsMap || {};
+      const fullList = [];
+
+      // 1. Masukkan data promo yang didapat dari sheet
+      fetchedList.forEach((item, idx) => {
+        const b = String(item.barcode || '').trim();
+        if (!b) return;
+        const pMeta = productsMap[b] || {};
+        fullList.push({
+          uid: 'promo_' + b + '_' + (item.account || 'ALL') + '_' + idx,
+          barcode: b,
+          desc: item.desc || pMeta.nama_barang || pMeta.name || 'Produk',
+          brand: pMeta.brand || 'CIMORY GROUP',
+          katagori: pMeta.katagori || 'PRODUK',
+          packsize: pMeta.packsize || '',
+          account: String(item.account || 'ALL').toUpperCase(),
+          jenis_promo: item.jenis_promo || '',
+          harga_promo: Number(item.harga_promo || 0),
+          mulai_promo: item.mulai_promo || '',
+          akhir_promo: item.akhir_promo || '',
+          status: item.status || 'AKTIF'
+        });
+      });
+
+      // 2. Jika ada produk master yang belum ada sama sekali di sheet promo, buat draft nonaktif
+      const existingBarcodes = new Set(fullList.map(item => item.barcode));
+      Object.keys(productsMap).forEach((barcode, idx) => {
+        if (!existingBarcodes.has(barcode)) {
+          const p = productsMap[barcode];
+          fullList.push({
+            uid: 'promo_' + barcode + '_ALL_new_' + idx,
+            barcode: barcode,
+            desc: p.nama_barang || p.name || 'Produk',
+            brand: p.brand || 'CIMORY GROUP',
+            katagori: p.katagori || 'YOGURT',
+            packsize: p.packsize || '',
+            account: 'ALL',
+            jenis_promo: '',
+            harga_promo: 0,
+            mulai_promo: '',
+            akhir_promo: '',
+            status: 'NONAKTIF'
           });
         }
-      } catch (err) {
-        console.warn('Master Promo live fetch error:', err);
+      });
+
+      window.masterPromoList = fullList;
+      localStorage.setItem('APP_MASTER_PROMO_CACHE', JSON.stringify(fullList));
+
+      if (btnSync) btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 text-blue-600"></i> <span>Refresh</span>`;
+      renderPromoManagerList();
+    }
+
+    // ACTIVE RETAIL PROMO TAB STATE
+    window.currentActiveRetailPromoTab = 'ALFAMART';
+
+    const RETAIL_NAMES_MAP = {
+      ALFAMART: 'Alfamart (SAT)',
+      INDOMARET: 'Indomaret (IDM)',
+      ALFAMIDI: 'Alfamidi',
+      LAWSON: 'Lawson',
+      CIRCLE_K: 'Circle K',
+      FAMILY_MART: 'Family Mart',
+      ALL: 'Semua Toko (Global)'
+    };
+
+    // SWITCH RETAIL SUB-TAB
+    function selectRetailPromoTab(retailKey) {
+      window.currentActiveRetailPromoTab = retailKey;
+      const allKeys = ['ALFAMART', 'INDOMARET', 'ALFAMIDI', 'LAWSON', 'CIRCLE_K', 'FAMILY_MART', 'ALL'];
+      
+      allKeys.forEach(k => {
+        const btn = document.getElementById('retailTabBtn_' + k);
+        if (btn) {
+          if (k === retailKey) {
+            btn.className = 'flex-1 min-w-[70px] py-1.5 px-2 rounded-lg transition-all text-center bg-white text-blue-600 shadow-sm border border-slate-200 font-extrabold';
+          } else {
+            btn.className = 'flex-1 min-w-[70px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900 font-bold';
+          }
+        }
+      });
+
+      const titleEl = document.getElementById('txtCurrentRetailTitle');
+      if (titleEl) titleEl.innerText = RETAIL_NAMES_MAP[retailKey] || retailKey;
+
+      renderPromoManagerList();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // HELPER PRESET CEPAT PERIODE TANGGAL PROMO
+    function getQuickPromoDates(type) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth(); // 0-indexed
+      const pad = (n) => String(n).padStart(2, '0');
+      const mm = pad(m + 1);
+
+      if (type === 'P1') {
+        // Periode 1: Tgl 1 s/d 15
+        return { start: `01/${mm}/${y}`, end: `15/${mm}/${y}` };
+      } else if (type === 'P2') {
+        // Periode 2: Tgl 16 s/d Akhir Bulan
+        const lastDay = new Date(y, m + 1, 0).getDate();
+        return { start: `16/${mm}/${y}`, end: `${pad(lastDay)}/${mm}/${y}` };
+      } else if (type === 'JSM') {
+        // JSM: Jumat - Minggu minggu ini
+        const dayOfWeek = now.getDay(); // 0: Sun, 5: Fri, 6: Sat
+        const fri = new Date(now);
+        fri.setDate(now.getDate() - (dayOfWeek >= 5 ? dayOfWeek - 5 : dayOfWeek + 2));
+        const sun = new Date(fri);
+        sun.setDate(fri.getDate() + 2);
+        return {
+          start: `${pad(fri.getDate())}/${pad(fri.getMonth() + 1)}/${fri.getFullYear()}`,
+          end: `${pad(sun.getDate())}/${pad(sun.getMonth() + 1)}/${sun.getFullYear()}`
+        };
+      } else if (type === 'BULAN') {
+        // 1 Bulan Penuh
+        const lastDay = new Date(y, m + 1, 0).getDate();
+        return { start: `01/${mm}/${y}`, end: `${pad(lastDay)}/${mm}/${y}` };
       }
-      return cachedMasterPromoMap;
+      return { start: '', end: '' };
+    }
+
+    // TERAPKAN QUICK PRESET TANGGAL KE PROMO
+    function applyQuickPeriod(barcode, retailKey, type) {
+      const dates = getQuickPromoDates(type);
+      updateRetailPromoField(barcode, retailKey, 'mulai_promo', dates.start);
+      updateRetailPromoField(barcode, retailKey, 'akhir_promo', dates.end);
+      renderPromoManagerList();
+    }
+
+    // HELPER SCAN PROMO DARI HASIL SCRAPER ALFAMART & INDOMARET
+    function getScraperPromoMapForRetail(retailKey) {
+      const map = {};
+      if (retailKey === 'ALFAMART') {
+        Object.values(cachedRegionJsonData || {}).forEach(storeList => {
+          if (Array.isArray(storeList)) {
+            storeList.forEach(st => {
+              if (Array.isArray(st.products)) {
+                st.products.forEach(p => {
+                  const b = String(p.barcode || '').trim();
+                  const norm = Number(p.normal || p.harga || 0);
+                  const prm = Number(p.promo || 0);
+                  if (b && prm > 0 && (norm === 0 || prm < norm)) {
+                    if (!map[b]) {
+                      map[b] = { normal: norm, promo: prm, name: p.name || '' };
+                    }
+                  }
+                });
+              }
+            });
+          }
+        });
+      } else if (retailKey === 'INDOMARET') {
+        try {
+          const idmData = JSON.parse(localStorage.getItem('IDM_SCRAPED_CACHE') || localStorage.getItem('IDM_SCRAPER_DATA') || '{}');
+          Object.values(idmData).forEach(st => {
+            if (st && Array.isArray(st.products)) {
+              st.products.forEach(p => {
+                const b = String(p.barcode || '').trim();
+                const norm = Number(p.normal || p.harga || 0);
+                const prm = Number(p.promo || 0);
+                if (b && prm > 0 && (norm === 0 || prm < norm)) {
+                  if (!map[b]) {
+                    map[b] = { normal: norm, promo: prm, name: p.name || '' };
+                  }
+                }
+              });
+            }
+          });
+        } catch (eIdm) { }
+      }
+      return map;
+    }
+
+    // RENDER LIST PRODUK DI PROMO MANAGER SESUAI SUB-TAB RETAIL AKTIF
+    function renderPromoManagerList() {
+      const container = document.getElementById('promoManagerContainer');
+      const countEl = document.getElementById('countActivePromo');
+      if (!container) return;
+
+      const activeRetail = window.currentActiveRetailPromoTab || 'ALFAMART';
+      const isScraperRetail = activeRetail === 'ALFAMART' || activeRetail === 'INDOMARET';
+      const q = (document.getElementById('inputSearchPromoManager')?.value || '').trim().toLowerCase();
+
+      const productsMap = window.masterProductsMap || {};
+      const promoList = window.masterPromoList || [];
+      const scraperPromoMap = getScraperPromoMapForRetail(activeRetail);
+
+      // Siapkan daftar produk yang terisi untuk retail yang aktif
+      const retailItems = [];
+
+      Object.keys(productsMap).forEach(b => {
+        const pMeta = productsMap[b];
+        let existing = promoList.find(item => 
+          String(item.barcode).trim() === String(b).trim() && 
+          String(item.account || 'ALL').toUpperCase() === activeRetail
+        );
+
+        const scraperDetected = scraperPromoMap[b];
+
+        if (!existing) {
+          existing = {
+            barcode: b,
+            desc: pMeta.nama_barang || pMeta.name || 'Produk',
+            brand: pMeta.brand || 'CIMORY GROUP',
+            katagori: pMeta.katagori || 'YOGURT',
+            packsize: pMeta.packsize || '',
+            account: activeRetail,
+            harga_normal: 0,
+            harga_promo: scraperDetected ? scraperDetected.promo : 0,
+            jenis_promo: scraperDetected ? 'DISKON (POTONGAN HARGA)' : '',
+            mulai_promo: '',
+            akhir_promo: '',
+            min_osa: 0,
+            max_osa: 0,
+            min_soh: 0,
+            max_soh: 0,
+            status: scraperDetected ? 'AKTIF' : 'NONAKTIF',
+            isFromScraper: Boolean(scraperDetected)
+          };
+          if (scraperDetected) {
+            promoList.push(existing);
+          }
+        } else {
+          // Jika terdeteksi promo dari scraper dan belum diset aktif, auto-aktifkan
+          if (scraperDetected) {
+            if (existing.status !== 'AKTIF') existing.status = 'AKTIF';
+            if (!existing.jenis_promo) existing.jenis_promo = 'DISKON (POTONGAN HARGA)';
+            if (!existing.harga_promo) existing.harga_promo = scraperDetected.promo;
+            existing.isFromScraper = true;
+          }
+        }
+
+        retailItems.push(existing);
+      });
+
+      // Hitung total promo aktif khusus retail ini
+      const totalActive = retailItems.filter(item => item.status === 'AKTIF' && (item.jenis_promo || Number(item.harga_promo) > 0 || Number(item.harga_normal) > 0 || Number(item.min_osa) > 0)).length;
+      if (countEl) countEl.innerText = totalActive;
+
+      // Filter Pencarian
+      let displayList = retailItems;
+      if (q) {
+        displayList = displayList.filter(item => 
+          (item.barcode && item.barcode.toLowerCase().includes(q)) || 
+          (item.desc && item.desc.toLowerCase().includes(q)) ||
+          (item.jenis_promo && item.jenis_promo.toLowerCase().includes(q))
+        );
+      }
+
+      // SMART SORTING KONSISTEN: Promo Aktif di atas -> Squeeze -> Kanzler -> UHT -> Dessert
+      displayList.sort((a, b) => {
+        const isPromoA = a.status === 'AKTIF' && Boolean(a.jenis_promo || Number(a.harga_promo) > 0 || Number(a.harga_normal) > 0 || Number(a.min_osa) > 0);
+        const isPromoB = b.status === 'AKTIF' && Boolean(b.jenis_promo || Number(b.harga_promo) > 0 || Number(b.harga_normal) > 0 || Number(b.min_osa) > 0);
+
+        if (isPromoA !== isPromoB) {
+          return isPromoA ? -1 : 1;
+        }
+
+        const rankA = getProductSortRank({ name: a.desc, barcode: a.barcode, promo: a.harga_promo, jenis_promo: a.jenis_promo });
+        const rankB = getProductSortRank({ name: b.desc, barcode: b.barcode, promo: b.harga_promo, jenis_promo: b.jenis_promo });
+
+        if (rankA.catRank !== rankB.catRank) {
+          return rankA.catRank - rankB.catRank;
+        }
+
+        return (a.desc || '').localeCompare(b.desc || '');
+      });
+
+      if (displayList.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-500 bg-white border border-slate-200 rounded-2xl p-4 text-xs">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-400"></i>
+            Tidak ada produk yang cocok dengan pencarian.
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = displayList.map((item) => {
+        const b = item.barcode;
+        const isAktif = item.status === 'AKTIF';
+        const jenis = item.jenis_promo || '';
+        const isDateValid = isDateWithinPromoRange(item.mulai_promo, item.akhir_promo);
+        const isFromScraper = Boolean(item.isFromScraper || scraperPromoMap[b]);
+
+        return `
+          <div class="bg-white border ${isAktif ? 'border-amber-400 shadow-sm bg-amber-50/20' : 'border-slate-200'} rounded-xl p-3 space-y-2.5 transition-all">
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-0.5 flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${isAktif ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600'}">
+                    ${item.brand || 'CIMORY'} • ${item.katagori || 'PRODUK'}
+                  </span>
+                  ${item.packsize ? `<span class="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${item.packsize}</span>` : ''}
+                  ${isFromScraper ? `<span class="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">✨ Scraper Detected</span>` : ''}
+                  ${isAktif && (item.mulai_promo || item.akhir_promo) && !isDateValid ? `<span class="text-[9px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-200">Di Luar Periode</span>` : ''}
+                </div>
+                <h4 class="text-xs font-bold text-slate-900 leading-tight pt-0.5 truncate">${item.desc}</h4>
+                <p class="text-[10px] font-mono text-slate-500">Barcode: <span class="font-bold text-slate-700">${b}</span></p>
+              </div>
+
+              <!-- TOGGLE PROMO SWITCH & HAPUS BUTTON -->
+              <div class="flex items-center space-x-2 shrink-0">
+                ${isAktif ? `
+                  <button type="button" title="Hapus / Reset Master Produk Ini" onclick="resetRetailPromoItem('${b}', '${activeRetail}')" class="p-1.5 text-rose-500 hover:text-white hover:bg-rose-600 rounded-lg border border-rose-200 transition-colors">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : ''}
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" onchange="toggleRetailPromoItem('${b}', '${activeRetail}', this.checked)" class="sr-only peer" ${isAktif ? 'checked' : ''}>
+                  <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- PROMO & STOK MASTER DETAIL INPUTS -->
+            <div class="space-y-2 pt-1.5 border-t border-slate-100 ${isAktif ? '' : 'opacity-60'}">
+              <div class="grid grid-cols-1 ${isScraperRetail ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-2 text-xs">
+                <!-- JENIS PROMO -->
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Jenis Promo</label>
+                  <select onchange="updateRetailPromoField('${b}', '${activeRetail}', 'jenis_promo', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-bold text-slate-800 text-xs focus:bg-white focus:border-blue-500">
+                    <option value="" ${jenis === '' ? 'selected' : ''}>-- Pilih Promo --</option>
+                    <option value="DISKON (POTONGAN HARGA)" ${jenis.includes('DISKON') ? 'selected' : ''}>DISKON (POTONGAN HARGA)</option>
+                    <option value="B1G1" ${jenis === 'B1G1' ? 'selected' : ''}>B1G1 (Beli 1 Gratis 1)</option>
+                    <option value="B2G1" ${jenis === 'B2G1' ? 'selected' : ''}>B2G1 (Beli 2 Gratis 1)</option>
+                    <option value="PWP" ${jenis === 'PWP' ? 'selected' : ''}>PWP</option>
+                    <option value="JSM" ${jenis === 'JSM' ? 'selected' : ''}>JSM</option>
+                    <option value="PALING MURAH SEJAGAT" ${jenis === 'PALING MURAH SEJAGAT' ? 'selected' : ''}>PALING MURAH SEJAGAT</option>
+                    <option value="PTW" ${jenis === 'PTW' ? 'selected' : ''}>PTW</option>
+                    <option value="GIMMICK (SOUVENIR)" ${jenis === 'GIMMICK (SOUVENIR)' ? 'selected' : ''}>GIMMICK (SOUVENIR)</option>
+                  </select>
+                  ${isScraperRetail ? `<span class="text-[9px] text-blue-600 font-semibold block pt-0.5">✨ Harga promo otomatis dari Scraper</span>` : ''}
+                </div>
+
+                <!-- HARGA NORMAL & HARGA PROMO (TOKO MANUAL: MIDI, LAWSON, CK, FAMMART, DLL) -->
+                ${!isScraperRetail ? `
+                  <div class="grid grid-cols-2 gap-1.5">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Harga Normal (Rp)</label>
+                      <input type="number" inputmode="numeric" placeholder="0" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'harga_normal', this.value)" value="${item.harga_normal || ''}" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-mono font-bold text-slate-800 text-xs focus:bg-white focus:border-blue-500">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Harga Promo (Rp)</label>
+                      <input type="number" inputmode="numeric" placeholder="0" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'harga_promo', this.value)" value="${item.harga_promo || ''}" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-mono font-bold text-slate-800 text-xs focus:bg-white focus:border-blue-500">
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- PERIODE PROMO DENGAN QUICK PRESET BUTTONS -->
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[10px] font-bold text-slate-600">Periode</label>
+                    <div class="flex items-center gap-1">
+                      <button type="button" onclick="applyQuickPeriod('${b}', '${activeRetail}', 'P1')" class="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[9px] font-extrabold border border-blue-200">1-15</button>
+                      <button type="button" onclick="applyQuickPeriod('${b}', '${activeRetail}', 'P2')" class="px-1.5 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-[9px] font-extrabold border border-indigo-200">16-End</button>
+                      <button type="button" onclick="applyQuickPeriod('${b}', '${activeRetail}', 'JSM')" class="px-1.5 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded text-[9px] font-extrabold border border-amber-200">JSM</button>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5">
+                    <input type="text" placeholder="DD/MM/YYYY" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'mulai_promo', this.value)" value="${item.mulai_promo || ''}" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-[10px] focus:bg-white focus:border-blue-500">
+                    <input type="text" placeholder="DD/MM/YYYY" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'akhir_promo', this.value)" value="${item.akhir_promo || ''}" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-[10px] focus:bg-white focus:border-blue-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- RANGE STOK OSA & SOH (KHUSUS TOKO MANUAL) -->
+              ${!isScraperRetail ? `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5 border-t border-slate-100 bg-slate-50/70 p-2 rounded-lg">
+                  <div>
+                    <label class="block text-[10px] font-bold text-blue-900 mb-0.5">Range Stok OSA (Min - Max)</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <input type="number" inputmode="numeric" placeholder="Min OSA" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'min_osa', this.value)" value="${item.min_osa || ''}" class="w-full bg-white border border-blue-200 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-xs focus:ring-1 focus:ring-blue-500">
+                      <input type="number" inputmode="numeric" placeholder="Max OSA" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'max_osa', this.value)" value="${item.max_osa || ''}" class="w-full bg-white border border-blue-200 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-xs focus:ring-1 focus:ring-blue-500">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-indigo-900 mb-0.5">Range Stok SOH (Min - Max)</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <input type="number" inputmode="numeric" placeholder="Min SOH" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'min_soh', this.value)" value="${item.min_soh || ''}" class="w-full bg-white border border-indigo-200 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-xs focus:ring-1 focus:ring-indigo-500">
+                      <input type="number" inputmode="numeric" placeholder="Max SOH" onchange="updateRetailPromoField('${b}', '${activeRetail}', 'max_soh', this.value)" value="${item.max_soh || ''}" class="w-full bg-white border border-indigo-200 rounded-lg px-2 py-1 font-mono font-bold text-slate-800 text-xs focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // RESET / HAPUS PROMO ITEM
+    function resetRetailPromoItem(barcode, retailKey) {
+      if (!confirm('Hapus master promo / stok untuk produk ini?')) return;
+      if (!window.masterPromoList) window.masterPromoList = [];
+      const idx = window.masterPromoList.findIndex(p => String(p.barcode) === String(barcode) && String(p.account || 'ALL').toUpperCase() === retailKey);
+      if (idx !== -1) {
+        window.masterPromoList.splice(idx, 1);
+      }
+      localStorage.setItem('APP_MASTER_PROMO_CACHE', JSON.stringify(window.masterPromoList));
+      renderPromoManagerList();
+    }
+
+    // UPDATE RETAIL PROMO FIELD
+    function toggleRetailPromoItem(barcode, retailKey, isChecked) {
+      if (!window.masterPromoList) window.masterPromoList = [];
+      let item = window.masterPromoList.find(p => String(p.barcode) === String(barcode) && String(p.account || 'ALL').toUpperCase() === retailKey);
+      
+      if (!item) {
+        const pMeta = (window.masterProductsMap || {})[barcode] || {};
+        item = {
+          barcode: barcode,
+          desc: pMeta.nama_barang || pMeta.name || 'Produk',
+          brand: pMeta.brand || 'CIMORY GROUP',
+          katagori: pMeta.katagori || 'PRODUK',
+          packsize: pMeta.packsize || '',
+          account: retailKey,
+          harga_normal: 0,
+          harga_promo: 0,
+          jenis_promo: 'DISKON (POTONGAN HARGA)',
+          mulai_promo: '',
+          akhir_promo: '',
+          min_osa: 0,
+          max_osa: 0,
+          min_soh: 0,
+          max_soh: 0,
+          status: 'AKTIF'
+        };
+        window.masterPromoList.push(item);
+      } else {
+        item.status = isChecked ? 'AKTIF' : 'NONAKTIF';
+        if (isChecked && !item.jenis_promo) {
+          item.jenis_promo = 'DISKON (POTONGAN HARGA)';
+        }
+      }
+
+      localStorage.setItem('APP_MASTER_PROMO_CACHE', JSON.stringify(window.masterPromoList));
+      renderPromoManagerList();
+    }
+
+    function updateRetailPromoField(barcode, retailKey, field, value) {
+      if (!window.masterPromoList) window.masterPromoList = [];
+      let item = window.masterPromoList.find(p => String(p.barcode) === String(barcode) && String(p.account || 'ALL').toUpperCase() === retailKey);
+      
+      if (!item) {
+        const pMeta = (window.masterProductsMap || {})[barcode] || {};
+        item = {
+          barcode: barcode,
+          desc: pMeta.nama_barang || pMeta.name || 'Produk',
+          brand: pMeta.brand || 'CIMORY GROUP',
+          katagori: pMeta.katagori || 'PRODUK',
+          packsize: pMeta.packsize || '',
+          account: retailKey,
+          harga_normal: 0,
+          harga_promo: 0,
+          jenis_promo: '',
+          mulai_promo: '',
+          akhir_promo: '',
+          min_osa: 0,
+          max_osa: 0,
+          min_soh: 0,
+          max_soh: 0,
+          status: 'AKTIF'
+        };
+        window.masterPromoList.push(item);
+      }
+
+      const numFields = ['harga_normal', 'harga_promo', 'min_osa', 'max_osa', 'min_soh', 'max_soh'];
+      item[field] = numFields.includes(field) ? Number(value || 0) : value;
+
+      if ((field === 'jenis_promo' && value.trim() !== '') || 
+          (numFields.includes(field) && Number(value) > 0)) {
+        item.status = 'AKTIF';
+      }
+
+      localStorage.setItem('APP_MASTER_PROMO_CACHE', JSON.stringify(window.masterPromoList));
+    }
+
+    // SAVE PROMO MANAGER TO GAS SPREADSHEET
+    async function savePromoManagerToGas() {
+      const btnSave = document.getElementById('btnSavePromoManager');
+      const originalText = btnSave ? btnSave.innerHTML : '';
+      if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Menyimpan ke Sheets...</span>`;
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // Ambil semua aturan yang aktif atau memiliki jenis promo, harga, atau stok range
+      const promoToSave = (window.masterPromoList || []).filter(item => 
+        item.status === 'AKTIF' || 
+        (item.jenis_promo && item.jenis_promo.trim() !== '') || 
+        Number(item.harga_promo || 0) > 0 ||
+        Number(item.harga_normal || 0) > 0 ||
+        Number(item.min_osa || 0) > 0 ||
+        Number(item.max_osa || 0) > 0 ||
+        Number(item.min_soh || 0) > 0 ||
+        Number(item.max_soh || 0) > 0
+      );
+
+      const gasUrl = localStorage.getItem('GAS_WEB_APP_URL') || DEFAULT_GAS_URL;
+
+      try {
+        const response = await fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'savePromoList',
+            promoList: promoToSave
+          })
+        });
+
+        if (response.ok) {
+          const resJson = await response.json();
+          alert(`✅ Berhasil! ${promoToSave.length} data master promo & stok berhasil disimpan ke Sheet 'Master_Promo' Google Spreadsheet.`);
+        } else {
+          alert('⚠️ Gagal menyimpan ke Google Spreadsheet. Silakan coba lagi.');
+        }
+      } catch (err) {
+        console.error('Error save promo:', err);
+        alert('⚠️ Terjadi kendala jaringan saat menyimpan promo: ' + err.message);
+      } finally {
+        if (btnSave) {
+          btnSave.disabled = false;
+          btnSave.innerHTML = originalText;
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
+    // FETCH MASTER PROMO LIVE FOR VISIT TAB 2 (MATCH BY ACCOUNT & ACTIVE DATE)
+    async function fetchMasterPromoLive(storeAccount = 'ALL') {
+      if (!window.masterPromoList || window.masterPromoList.length === 0) {
+        try {
+          const localStr = localStorage.getItem('APP_MASTER_PROMO_CACHE');
+          if (localStr) window.masterPromoList = JSON.parse(localStr);
+        } catch (e) { }
+      }
+
+      if (!window.masterPromoList || window.masterPromoList.length === 0) {
+        await refreshPromoManagerFromGas();
+      }
+
+      const map = {};
+      const targetAcc = (storeAccount || 'ALL').trim().toUpperCase();
+
+      (window.masterPromoList || []).forEach(item => {
+        if (item.status === 'AKTIF' && item.barcode) {
+          const acc = (item.account || 'ALL').toUpperCase();
+          const isMatchAcc = acc === 'ALL' || 
+                             acc === targetAcc || 
+                             targetAcc.includes(acc) || 
+                             acc.includes(targetAcc);
+
+          // Cek apakah tanggal hari ini masuk di periode promo
+          const isDateActive = isDateWithinPromoRange(item.mulai_promo, item.akhir_promo);
+
+          if (isMatchAcc) {
+            const b = String(item.barcode).trim();
+            // Simpan promo yang paling spesifik (prioritaskan akun toko spesifik daripada ALL)
+            if (!map[b] || map[b].account === 'ALL') {
+              map[b] = {
+                harga_normal: Number(item.harga_normal || 0),
+                harga_promo: Number(item.harga_promo || 0),
+                jenis_promo: isDateActive ? (item.jenis_promo || 'DISKON (POTONGAN HARGA)') : '',
+                mulai_promo: item.mulai_promo || '',
+                akhir_promo: item.akhir_promo || '',
+                min_osa: Number(item.min_osa || 0),
+                max_osa: Number(item.max_osa || 0),
+                min_soh: Number(item.min_soh || 0),
+                max_soh: Number(item.max_soh || 0),
+                status: item.status || 'AKTIF',
+                account: acc
+              };
+            }
+          }
+        }
+      });
+
+      return map;
     }
 
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbygchXO4wjPF1nrz0ptkmdHr6huToJr_SJo4v1K6VsnHGFXu5bsKCz4c8yA2LK96WMO/exec';
@@ -1685,38 +2415,67 @@
         // Ekstrak 4-karakter kode toko murni (misal: "1Y09-MAPANGET RAYA" -> "1Y09")
         const code4Char = fullCode.split(/[-_\s\[]/)[0].trim();
 
-        // 1. Fetch store_index.json jika belum di-cache di memori
-        if (!cachedStoreIndexMap) {
-          const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
-          if (resIndex.ok) {
-            cachedStoreIndexMap = await resIndex.json();
-          }
-        }
+        const currentStore = (window.activeFilteredStores || masterTokoData || []).find(s => {
+          const sc = String(s.kodeToko || '').trim().toUpperCase();
+          return sc === fullCode || sc === code4Char || sc.startsWith(code4Char);
+        });
+        
+        const isIndomaret = (currentStore && String(currentStore.account || '').toUpperCase().includes('INDOMARET')) ||
+                            (currentStore && String(currentStore.namaToko || '').toUpperCase().includes('INDOMARET')) ||
+                            fullCode.startsWith('T') || (code4Char.length === 4 && code4Char.startsWith('T'));
 
         let rawProducts = [];
-        let matchedRegionFile = null;
-        if (cachedStoreIndexMap) {
-          matchedRegionFile = cachedStoreIndexMap[fullCode] || cachedStoreIndexMap[code4Char];
-        }
 
-        if (matchedRegionFile) {
-          // 2. Fetch region JSON jika belum di-cache di memori
-          if (!cachedRegionJsonData[matchedRegionFile]) {
-            const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(matchedRegionFile));
-            if (resRegion.ok) {
-              cachedRegionJsonData[matchedRegionFile] = await resRegion.json();
+        if (isIndomaret) {
+          // 1. INDOMARET: Cek cache Tampermonkey / LocalStorage
+          try {
+            const idmData = JSON.parse(localStorage.getItem('IDM_SCRAPED_CACHE') || localStorage.getItem('IDM_SCRAPER_DATA') || '{}');
+            let match = idmData[fullCode] || idmData[code4Char];
+            if (!match) {
+              const matchedKey = Object.keys(idmData).find(k => k.startsWith(code4Char) || code4Char.startsWith(k));
+              if (matchedKey) match = idmData[matchedKey];
             }
-          }
+            if (match && Array.isArray(match.products) && match.products.length > 0) {
+              rawProducts = match.products;
+              console.log(`[Tab2 Scraper] Matched ${rawProducts.length} Indomaret items for store ${fullCode}`);
+            }
+          } catch (eIdm) { }
+        } else {
+          // 2. ALFAMART: Fetch store_index.json jika belum di-cache di memori
+          try {
+            if (!cachedStoreIndexMap) {
+              const resIndex = await fetch(GITHUB_RAW_BASE_URL + 'store_index.json');
+              if (resIndex.ok) {
+                cachedStoreIndexMap = await resIndex.json();
+              }
+            }
 
-          if (cachedRegionJsonData[matchedRegionFile]) {
-            const rawStore = cachedRegionJsonData[matchedRegionFile].find(s => {
-              const sc = String(s.store_code || '').trim().toUpperCase();
-              return sc === fullCode || sc === code4Char;
-            });
-            if (rawStore && Array.isArray(rawStore.products)) {
-              rawProducts = rawStore.products;
-              console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
+            let matchedRegionFile = null;
+            if (cachedStoreIndexMap) {
+              matchedRegionFile = cachedStoreIndexMap[fullCode] || cachedStoreIndexMap[code4Char];
             }
+
+            if (matchedRegionFile) {
+              if (!cachedRegionJsonData[matchedRegionFile]) {
+                const resRegion = await fetch(GITHUB_RAW_BASE_URL + encodeURIComponent(matchedRegionFile));
+                if (resRegion.ok) {
+                  cachedRegionJsonData[matchedRegionFile] = await resRegion.json();
+                }
+              }
+
+              if (cachedRegionJsonData[matchedRegionFile]) {
+                const rawStore = cachedRegionJsonData[matchedRegionFile].find(s => {
+                  const sc = String(s.store_code || '').trim().toUpperCase();
+                  return sc === fullCode || sc === code4Char;
+                });
+                if (rawStore && Array.isArray(rawStore.products)) {
+                  rawProducts = rawStore.products;
+                  console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for Alfamart store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
+                }
+              }
+            }
+          } catch (eAlfa) {
+            console.warn('[Tab2 Scraper] Error fetching Alfamart github data:', eAlfa);
           }
         }
 
@@ -1726,21 +2485,67 @@
           console.log(`[Tab2 Scraper] Store ${fullCode} fallback master products: ${rawProducts.length} items`);
         }
 
-        // 4. Merge Live Master Promo (Jenis Promo, Mulai Promo, Akhir Promo) matched by Barcode!
+        // 4. Merge Live Master Promo, Default Prices & Range Stok OSA/SOH
         try {
-          const promoMap = await fetchMasterPromoLive();
+          const storeAcc = currentStore ? String(currentStore.account || '').toUpperCase() : '';
+          const storeName = currentStore ? String(currentStore.namaToko || '').toUpperCase() : '';
+          const isSat = storeAcc.includes('ALFAMART') || storeAcc.includes('SAT') || storeName.includes('ALFAMART') || fullCode.startsWith('1') || fullCode.startsWith('2') || fullCode.startsWith('3') || fullCode.startsWith('4');
+          const isIdm = isIndomaret;
+          const isManualStore = !isSat && !isIdm;
+
+          const promoMap = await fetchMasterPromoLive(storeAcc);
           if (promoMap && rawProducts.length > 0) {
             rawProducts.forEach(p => {
               const bCode = String(p.barcode || '').trim();
-              if (promoMap[bCode]) {
-                const m = promoMap[bCode];
+              const m = promoMap[bCode];
+              if (m) {
+                // Set harga promo & jenis promo jika ada
+                if (m.harga_promo && Number(m.harga_promo) > 0) p.promo = m.harga_promo;
                 if (m.jenis_promo) p.jenis_promo = m.jenis_promo;
                 if (m.mulai_promo) p.mulai_promo = m.mulai_promo;
                 if (m.akhir_promo) p.akhir_promo = m.akhir_promo;
+
+                // Khusus Toko Manual (Alfamidi, Lawson, Circle K, Family Mart, dll):
+                if (isManualStore) {
+                  if (m.harga_normal && Number(m.harga_normal) > 0) {
+                    p.normal = m.harga_normal;
+                  }
+
+                  // Auto-generate Stok OSA dari Range (Min - Max)
+                  const maxOsa = Math.max(Number(m.min_osa || 0), Number(m.max_osa || 0));
+                  const minOsa = Math.min(Number(m.min_osa || 0), Number(m.max_osa || 0));
+                  if (maxOsa > 0) {
+                    const randOsa = Math.floor(Math.random() * (maxOsa - minOsa + 1)) + minOsa;
+                    p.qty_osa = randOsa;
+                    p.osa = 'ISI';
+                  }
+
+                  // Auto-generate Stok SOH dari Range (Min - Max)
+                  const maxSoh = Math.max(Number(m.min_soh || 0), Number(m.max_soh || 0));
+                  const minSoh = Math.min(Number(m.min_soh || 0), Number(m.max_soh || 0));
+                  if (maxSoh > 0) {
+                    const randSoh = Math.floor(Math.random() * (maxSoh - minSoh + 1)) + minSoh;
+                    p.qty_soh = randSoh;
+                    p.stock = randSoh;
+                  }
+                }
               }
             });
           }
-        } catch (ePromo) { }
+        } catch (ePromo) {
+          console.warn('[Tab2 Promo/OSA Auto-fill] Error:', ePromo);
+        }
+
+        // 5. AUTO-DETECT PROMO SCRAPER (IDM & ALFAMART): JIKA HARGA PROMO < HARGA NORMAL
+        rawProducts.forEach(p => {
+          const normalPrice = Number(p.normal || 0);
+          const promoPrice = Number(p.promo || 0);
+          if (promoPrice > 0 && (normalPrice === 0 || promoPrice < normalPrice)) {
+            if (!p.jenis_promo || p.jenis_promo.trim() === '') {
+              p.jenis_promo = 'DISKON (POTONGAN HARGA)';
+            }
+          }
+        });
 
         window.currentStoreScraperProducts = rawProducts;
         renderProductCardsList(rawProducts);
@@ -1817,169 +2622,220 @@
       }
     }
 
+    // HELPER PRODUCT SORTING RANK (PROMO DULUAN -> CIMORY SQUEEZE/YOGURT -> KANZLER -> UHT MILK -> DESSERT)
+    function getProductSortRank(p) {
+      const meta = parseProductMeta(p.name, p.barcode);
+      const cat = (meta.katagori || '').toUpperCase();
+      const name = (meta.nama_sheet || p.name || '').toUpperCase();
+      const brand = (meta.brand || '').toUpperCase();
+
+      // 1. Promo check (Item promo ditaruh paling atas)
+      const isPromo = (Number(p.promo || 0) > 0) || Boolean(p.jenis_promo && p.jenis_promo.trim() !== '');
+
+      // 2. Kategori / Brand ranking
+      let catRank = 99;
+      if (name.includes('SQUEEZE') || cat.includes('YOGURT')) {
+        catRank = 10; // Cimory Yogurt & Squeeze
+      } else if (brand.includes('KANZLER') || cat.includes('RTE') || cat.includes('RTC') || name.includes('SOSIS') || name.includes('NUGGET') || name.includes('BAKSO')) {
+        catRank = 20; // Kanzler / RTE / RTC
+      } else if (cat.includes('UHT') || cat.includes('FRESH MILK') || name.includes('UHT') || name.includes('MILK')) {
+        catRank = 30; // UHT & Fresh Milk
+      } else if (cat.includes('DESSERT') || name.includes('EATMILK')) {
+        catRank = 40; // Dessert / Eatmilk
+      }
+
+      return {
+        isPromoRank: isPromo ? 0 : 1,
+        catRank,
+        name
+      };
+    }
+
     // TAB 2: RENDER BEAUTIFUL PRODUCT CARDS LIST WITH INLINE INPUTS & EXPANDABLE "DETAIL" BUTTON
     function renderProductCardsList(customProducts = null) {
       const container = document.getElementById('productCardsContainer');
       const countBadge = document.getElementById('txtScraperProductCount');
-      const products = customProducts !== null ? customProducts : (window.currentStoreScraperProducts || []);
+      let products = customProducts !== null ? [...customProducts] : [...(window.currentStoreScraperProducts || [])];
+
+      // SORT PRODUK: PROMO DI ATAS -> YOGURT/SQUEEZE -> KANZLER -> UHT -> DESSERT
+      products.sort((a, b) => {
+        const rankA = getProductSortRank(a);
+        const rankB = getProductSortRank(b);
+
+        if (rankA.isPromoRank !== rankB.isPromoRank) {
+          return rankA.isPromoRank - rankB.isPromoRank; // Promo di atas
+        }
+        if (rankA.catRank !== rankB.catRank) {
+          return rankA.catRank - rankB.catRank; // Kategori terurut
+        }
+        return rankA.name.localeCompare(rankB.name); // Nama alfabetis
+      });
+
+      const currentAccount = (document.getElementById('field_ACCOUNT')?.value || '').trim().toUpperCase();
+      const currentStoreName = (document.getElementById('field_NAMATOKO')?.value || '').trim().toUpperCase();
+      const isSatOrIdm = currentAccount.includes('ALFAMART') || 
+                         currentAccount.includes('INDOMARET') || 
+                         currentAccount === 'SAT' || 
+                         currentAccount === 'IDM' || 
+                         currentStoreName.includes('ALFAMART') || 
+                         currentStoreName.includes('INDOMARET');
 
       if (countBadge) {
         const withStock = products.filter(p => Number(p.stock || 0) > 0).length;
-        if (withStock > 0 && withStock !== products.length) {
-          countBadge.innerHTML = `<span class="font-extrabold text-blue-700">${products.length} Produk Raw</span> <span class="text-slate-500 font-normal">(${withStock} Ber-Stok)</span>`;
+        if (isSatOrIdm) {
+          countBadge.innerHTML = `<span class="font-extrabold text-blue-700">${products.length} Produk (${currentAccount || 'Scraper'})</span>`;
         } else {
-          countBadge.textContent = `${products.length} Produk (Raw Alfagift)`;
+          countBadge.innerHTML = `<span class="font-extrabold text-amber-700">${products.length} Produk (Manual Audit)</span>`;
         }
       }
 
+      if (!container) return;
+      container.innerHTML = '';
+
       if (products.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-8 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <i data-lucide="package-x" class="w-8 h-8 text-slate-400 mx-auto"></i>
-            <p class="text-xs font-bold text-slate-500">Tidak ada produk ditemukan</p>
+          <div class="text-center py-8 text-slate-500 text-xs">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-400"></i>
+            Tidak ada produk yang cocok dengan pencarian.
           </div>
         `;
         if (window.lucide) lucide.createIcons();
         return;
       }
 
-      container.innerHTML = '';
       products.forEach((p, idx) => {
         const barcodeStr = String(p.barcode || '').trim();
         const pName = p.name || 'Produk';
         const meta = parseProductMeta(pName, barcodeStr);
 
         const card = document.createElement('div');
-        card.className = 'bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-4 space-y-3 shadow-sm transition-all';
-
         const isPromoActive = (Number(p.promo || 0) > 0) || Boolean(p.jenis_promo && p.jenis_promo.trim() !== '') || Boolean(p.mulai_promo && p.mulai_promo.trim() !== '');
-        const osa = p.osa || 'TIDAK';
+        
+        card.className = isPromoActive
+          ? 'bg-amber-50/30 border-2 border-amber-400 hover:border-amber-500 rounded-xl p-3 space-y-2.5 shadow-sm transition-all relative overflow-hidden'
+          : 'bg-white border border-slate-200 hover:border-blue-400 rounded-xl p-3 space-y-2.5 shadow-sm transition-all';
+
         const exp1b = p.expired_1bulan || 'TIDAK ADA';
         const expDisp = p.expired_display || 'TIDAK ADA';
         const pkm = p.pkm || 'TIDAK ADA INSTRUKSI';
 
         card.innerHTML = `
           <!-- CARD HEADER & DETAIL BUTTON -->
-          <div class="flex items-start justify-between">
-            <div class="space-y-0.5 flex-1 pr-2">
-              <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
-                <span class="text-[9px] font-extrabold uppercase bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md border border-blue-200">${meta.brand} • ${meta.katagori}</span>
+          <div class="flex items-start justify-between gap-2">
+            <div class="space-y-0.5 flex-1 min-w-0">
+              <div class="flex items-center space-x-1.5 flex-wrap gap-y-0.5">
+                <span class="text-[9px] font-extrabold uppercase bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">${meta.brand} • ${meta.katagori}</span>
                 ${meta.packsize ? `<span class="text-[9px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">${meta.packsize}</span>` : ''}
+                ${isPromoActive ? `<span class="text-[9px] font-black uppercase bg-gradient-to-r from-red-600 to-amber-500 text-white px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 tracking-wider"><i data-lucide="flame" class="w-2.5 h-2.5 fill-current"></i> PROMO</span>` : ''}
               </div>
-              <h4 class="text-xs font-extrabold text-slate-900 leading-snug pt-0.5">${meta.nama_sheet}</h4>
-              <p class="text-[11px] font-mono text-slate-500">Barcode: <span class="font-bold text-slate-700">${barcodeStr}</span> | Stock: <span class="font-bold text-slate-700">${p.stock || 0} Pcs</span></p>
+              <h4 class="text-xs font-bold text-slate-900 leading-tight pt-0.5 truncate">${meta.nama_sheet}</h4>
+              <p class="text-[10px] font-mono text-slate-500">Barcode: <span class="font-bold text-slate-700">${barcodeStr}</span></p>
             </div>
-            <button type="button" onclick="toggleProductDetailCard('${barcodeStr}')" class="shrink-0 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm flex items-center space-x-1">
+            <button type="button" onclick="toggleProductDetailCard('${barcodeStr}')" class="shrink-0 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-blue-600 hover:text-white border border-slate-200 px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1">
               <span>Detail</span>
-              <i data-lucide="chevron-down" id="iconDetailChevron_${barcodeStr}" class="w-3.5 h-3.5 transition-transform"></i>
+              <i data-lucide="chevron-down" id="iconDetailChevron_${barcodeStr}" class="w-3 h-3 transition-transform"></i>
             </button>
           </div>
 
-          <!-- INLINE PRICES FORM INPUTS (SAT-SET ENTER / TAB NAVIGATION ENABLED) -->
-          <div class="grid grid-cols-2 gap-2.5 pt-1 text-xs">
-            <div class="space-y-1">
-              <label class="block text-[11px] font-bold text-slate-700">Harga Normal (Rp)</label>
-              <input type="number" data-card-idx="${idx}" data-price-type="normal" data-barcode="${barcodeStr}" enterkeyhint="next" onfocus="this.select()" onkeydown="handlePriceInputKeydown(event, ${idx}, 'normal')" oninput="updateProductField('${barcodeStr}', 'normal', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-sm" value="${p.normal || 0}">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-[11px] font-bold text-slate-700">Harga Promo (Rp)</label>
-              <input type="number" data-card-idx="${idx}" data-price-type="promo" data-barcode="${barcodeStr}" enterkeyhint="next" onfocus="this.select()" onkeydown="handlePriceInputKeydown(event, ${idx}, 'promo')" oninput="updateProductField('${barcodeStr}', 'promo', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 shadow-sm" value="${p.promo || 0}">
-            </div>
-          </div>
-
-          <!-- PROMO PERIOD / TYPE DETAILS (AUTOMATIS MUNCUL BILA JENIS/PERIODE PROMO ADA ATAU PROMO > 0) -->
-          <div id="inlinePromoBlock_${barcodeStr}" class="${isPromoActive ? '' : 'hidden'} bg-amber-50/90 p-3 rounded-xl border border-amber-300 space-y-2.5 text-xs">
-            <div class="flex items-center space-x-1.5 text-amber-900 font-extrabold text-[11px]">
-              <i data-lucide="tag" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span>Detail Promo Aktif (${p.jenis_promo || 'PROMO'})</span>
+          <!-- INLINE PRICES FORM INPUTS -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Harga Normal (Rp)</label>
+              <input type="number" inputmode="numeric" data-card-idx="${idx}" data-price-type="normal" data-barcode="${barcodeStr}" enterkeyhint="next" onfocus="this.select()" onkeydown="handlePriceInputKeydown(event, ${idx}, 'normal')" oninput="updateProductField('${barcodeStr}', 'normal', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold text-slate-900 text-xs focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-500 shadow-sm" value="${p.normal || 0}">
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Jenis Promo</label>
-              <select onchange="updateProductField('${barcodeStr}', 'jenis_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-900 text-xs">
-                <option value="">-- Pilih Jenis Promo --</option>
-                <option value="B1G1" ${p.jenis_promo === 'B1G1' ? 'selected' : ''}>B1G1</option>
-                <option value="B2G1" ${p.jenis_promo === 'B2G1' ? 'selected' : ''}>B2G1</option>
-                <option value="PWP" ${p.jenis_promo === 'PWP' ? 'selected' : ''}>PWP</option>
-                <option value="DISKON (POTONGAN HARGA)" ${p.jenis_promo === 'DISKON (POTONGAN HARGA)' ? 'selected' : ''}>DISKON (POTONGAN HARGA)</option>
-                <option value="GIMMICK (SOUVENIR)" ${p.jenis_promo === 'GIMMICK (SOUVENIR)' ? 'selected' : ''}>GIMMICK (SOUVENIR)</option>
-                <option value="JSM" ${p.jenis_promo === 'JSM' ? 'selected' : ''}>JSM</option>
-                <option value="PALING MURAH SEJAGAT" ${p.jenis_promo === 'PALING MURAH SEJAGAT' ? 'selected' : ''}>PALING MURAH SEJAGAT</option>
-                <option value="PTW" ${p.jenis_promo === 'PTW' ? 'selected' : ''}>PTW</option>
-              </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Mulai Promo</label>
-                <input type="date" onchange="updateProductField('${barcodeStr}', 'mulai_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-900" value="${formatDateYyyyMmDd(p.mulai_promo)}">
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Akhir Promo</label>
-                <input type="date" onchange="updateProductField('${barcodeStr}', 'akhir_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-900" value="${formatDateYyyyMmDd(p.akhir_promo)}">
-              </div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Harga Promo (Rp)</label>
+              <input type="number" inputmode="numeric" data-card-idx="${idx}" data-price-type="promo" data-barcode="${barcodeStr}" enterkeyhint="next" onfocus="this.select()" onkeydown="handlePriceInputKeydown(event, ${idx}, 'promo')" oninput="updateProductField('${barcodeStr}', 'promo', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold text-slate-900 text-xs focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-500 shadow-sm" value="${p.promo || 0}">
             </div>
           </div>
 
-          <!-- COLLAPSIBLE DETAIL AUDIT SECTION (EXPANDABLE) -->
-          <div id="productDetailBlock_${barcodeStr}" class="hidden pt-3 border-t border-slate-200 space-y-3 text-xs">
+          <!-- DIRECT OSA & SOH INPUTS (KHUSUS TOKO MANUAL DILUAR SAT & IDM) -->
+          ${!isSatOrIdm ? `
+            <div class="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-100 bg-blue-50/70 p-2 rounded-lg">
+              <div>
+                <label class="block text-[10px] font-black text-blue-900 mb-0.5">QTY OSA (PCS)</label>
+                <input type="number" inputmode="numeric" placeholder="0" oninput="updateOsaDirect('${barcodeStr}', 'qty_osa', this.value)" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 font-mono font-bold text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 shadow-sm" value="${p.qty_osa || ''}">
+              </div>
+              <div>
+                <label class="block text-[10px] font-black text-blue-900 mb-0.5">QTY SOH (PCS)</label>
+                <input type="number" inputmode="numeric" placeholder="0" oninput="updateOsaDirect('${barcodeStr}', 'qty_soh', this.value)" class="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 font-mono font-bold text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 shadow-sm" value="${p.qty_soh || p.stock || ''}">
+              </div>
+            </div>
+          ` : ''}
 
-            <!-- OSA TOGGLE -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-              <label class="block font-bold text-slate-800">OSA (PILIH ISI UNTUK TOKO DILUAR SAT DAN IDM)</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button type="button" id="btnOsaIsi_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'osa', 'ISI')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${osa === 'ISI' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">ISI</button>
-                <button type="button" id="btnOsaTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'osa', 'TIDAK')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${osa === 'TIDAK' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK</button>
+          <!-- COLLAPSIBLE DETAIL AUDIT SECTION (PROMO, EXPIRED & PKM) -->
+          <div id="productDetailBlock_${barcodeStr}" class="hidden pt-2 border-t border-slate-200 space-y-2 text-xs">
+
+            <!-- PROMO DETAIL INSIDE ACCORDION -->
+            <div class="bg-amber-50/80 p-2.5 rounded-lg border border-amber-200 space-y-1.5">
+              <div class="flex items-center space-x-1 text-amber-900 font-extrabold text-[10px]">
+                <i data-lucide="tag" class="w-3 h-3 text-amber-600"></i>
+                <span>Pengaturan Promo Produk</span>
               </div>
 
-              <div id="blockOsaQty_${barcodeStr}" class="${osa === 'ISI' ? '' : 'hidden'} grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+              <div>
+                <label class="block font-bold text-slate-700 mb-0.5 text-[10px]">Jenis Promo</label>
+                <select onchange="updateProductField('${barcodeStr}', 'jenis_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 font-bold text-slate-900 text-xs">
+                  <option value="">-- Pilih Jenis Promo --</option>
+                  <option value="B1G1" ${p.jenis_promo === 'B1G1' ? 'selected' : ''}>B1G1</option>
+                  <option value="B2G1" ${p.jenis_promo === 'B2G1' ? 'selected' : ''}>B2G1</option>
+                  <option value="PWP" ${p.jenis_promo === 'PWP' ? 'selected' : ''}>PWP</option>
+                  <option value="DISKON (POTONGAN HARGA)" ${p.jenis_promo === 'DISKON (POTONGAN HARGA)' ? 'selected' : ''}>DISKON (POTONGAN HARGA)</option>
+                  <option value="GIMMICK (SOUVENIR)" ${p.jenis_promo === 'GIMMICK (SOUVENIR)' ? 'selected' : ''}>GIMMICK (SOUVENIR)</option>
+                  <option value="JSM" ${p.jenis_promo === 'JSM' ? 'selected' : ''}>JSM</option>
+                  <option value="PALING MURAH SEJAGAT" ${p.jenis_promo === 'PALING MURAH SEJAGAT' ? 'selected' : ''}>PALING MURAH SEJAGAT</option>
+                  <option value="PTW" ${p.jenis_promo === 'PTW' ? 'selected' : ''}>PTW</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">QTY OSA (PCS)</label>
-                  <input type="number" oninput="updateProductField('${barcodeStr}', 'qty_osa', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-900 text-xs" value="${p.qty_osa || 0}">
+                  <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Mulai Promo</label>
+                  <input type="date" onchange="updateProductField('${barcodeStr}', 'mulai_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-900" value="${formatDateYyyyMmDd(p.mulai_promo)}">
                 </div>
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">QTY SOH (PCS)</label>
-                  <input type="number" oninput="updateProductField('${barcodeStr}', 'qty_soh', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-900 text-xs" value="${p.qty_soh || p.stock || 0}">
+                  <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Akhir Promo</label>
+                  <input type="date" onchange="updateProductField('${barcodeStr}', 'akhir_promo', this.value)" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-900" value="${formatDateYyyyMmDd(p.akhir_promo)}">
                 </div>
               </div>
             </div>
 
             <!-- EXPIRED < 1 BULAN -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-              <label class="block font-bold text-slate-800">APAKAH ADA EXPIRED &lt;1BULAN?</label>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+              <label class="block font-bold text-slate-800 text-[11px]">APAKAH ADA EXPIRED &lt;1BULAN?</label>
               <div class="grid grid-cols-2 gap-2">
-                <button type="button" id="btnExp1BulanAda_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_1bulan', 'ADA')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${exp1b === 'ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">ADA</button>
-                <button type="button" id="btnExp1BulanTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_1bulan', 'TIDAK ADA')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${exp1b === 'TIDAK ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA</button>
+                <button type="button" id="btnExp1BulanAda_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_1bulan', 'ADA')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${exp1b === 'ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">ADA</button>
+                <button type="button" id="btnExp1BulanTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_1bulan', 'TIDAK ADA')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${exp1b === 'TIDAK ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA</button>
               </div>
 
-              <div id="blockExp1BulanDetails_${barcodeStr}" class="${exp1b === 'ADA' ? '' : 'hidden'} grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+              <div id="blockExp1BulanDetails_${barcodeStr}" class="${exp1b === 'ADA' ? '' : 'hidden'} grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-200">
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">EXP DATE TERDEKAT</label>
+                  <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">EXP TERDEKAT</label>
                   <input type="date" onchange="updateProductField('${barcodeStr}', 'exp_date_terdekat', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-900" value="${p.exp_date_terdekat || ''}">
                 </div>
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">QTY EXP TERDEKAT</label>
-                  <input type="number" oninput="updateProductField('${barcodeStr}', 'qty_exp_terdekat', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-900 text-xs" value="${p.qty_exp_terdekat || 0}">
+                  <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">QTY EXP</label>
+                  <input type="number" inputmode="numeric" oninput="updateProductField('${barcodeStr}', 'qty_exp_terdekat', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-slate-900 text-xs" value="${p.qty_exp_terdekat || 0}">
                 </div>
               </div>
             </div>
 
             <!-- EXPIRED TERDISPLAY -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-              <label class="block font-bold text-slate-800">APAKAH ADA PRODUK EXPIRED TERDISPLAY?</label>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+              <label class="block font-bold text-slate-800 text-[11px]">PRODUK EXPIRED TERDISPLAY?</label>
               <div class="grid grid-cols-2 gap-2">
-                <button type="button" id="btnExpDisplayAda_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_display', 'ADA')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${expDisp === 'ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">ADA</button>
-                <button type="button" id="btnExpDisplayTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_display', 'TIDAK ADA')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${expDisp === 'TIDAK ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA</button>
+                <button type="button" id="btnExpDisplayAda_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_display', 'ADA')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${expDisp === 'ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">ADA</button>
+                <button type="button" id="btnExpDisplayTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'expired_display', 'TIDAK ADA')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${expDisp === 'TIDAK ADA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA</button>
               </div>
             </div>
 
             <!-- KONDISIONAL CEK PKM -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-              <label class="block font-bold text-slate-800">KONDISIONAL_CEK PKM</label>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+              <label class="block font-bold text-slate-800 text-[11px]">KONDISIONAL_CEK PKM</label>
               <div class="grid grid-cols-2 gap-2">
-                <button type="button" id="btnPkmYa_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'pkm', 'YA')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${pkm === 'YA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">YA</button>
-                <button type="button" id="btnPkmTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'pkm', 'TIDAK ADA INSTRUKSI')" class="py-2 px-3 rounded-lg border border-slate-300 font-bold ${pkm === 'TIDAK ADA INSTRUKSI' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA INSTRUKSI</button>
+                <button type="button" id="btnPkmYa_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'pkm', 'YA')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${pkm === 'YA' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">YA</button>
+                <button type="button" id="btnPkmTidak_${barcodeStr}" onclick="setProductStatus('${barcodeStr}', 'pkm', 'TIDAK ADA INSTRUKSI')" class="py-1.5 px-2 rounded-lg border border-slate-300 font-bold text-xs ${pkm === 'TIDAK ADA INSTRUKSI' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}">TIDAK ADA INSTRUKSI</button>
               </div>
             </div>
 
@@ -1991,6 +2847,26 @@
 
       if (window.lucide) lucide.createIcons();
     }
+
+    // DIRECT OSA HELPER FOR MANUAL STORES (ALFAMIDI, LAWSON, DLL)
+    function updateOsaDirect(barcodeStr, fieldKey, val) {
+      const products = window.currentStoreScraperProducts || [];
+      const p = products.find(item => String(item.barcode || '').trim() === String(barcodeStr).trim());
+      if (!p) return;
+
+      p[fieldKey] = val;
+      const osaQty = parseFloat(p.qty_osa) || 0;
+      const sohQty = parseFloat(p.qty_soh) || 0;
+
+      if (osaQty > 0 || sohQty > 0) {
+        p.osa = 'ISI';
+      } else {
+        p.osa = 'TIDAK';
+      }
+
+      saveVisitDraftState();
+    }
+    window.updateOsaDirect = updateOsaDirect;
 
     // TOGGLE COLLAPSIBLE PRODUCT DETAIL CARD
     function toggleProductDetailCard(barcodeStr) {
@@ -2376,6 +3252,13 @@
       });
     }
 
+    // HELPER PARSE GPS NUMBER
+    function parseGpsNum(val) {
+      if (val === null || val === undefined) return NaN;
+      const str = String(val).trim().replace(',', '.');
+      return parseFloat(str);
+    }
+
     // DYNAMIC GITHUB RAW GEOLOCATION & JITTER ENGINE
     async function getDynamicStoreLocationFromGithub(storeCode) {
       if (!storeCode) return null;
@@ -2401,12 +3284,6 @@
             cachedRegionJsonData[regionFileName] = await resRegion.json();
           }
         }
-
-        const parseGpsNum = (val) => {
-          if (val === null || val === undefined) return NaN;
-          const str = String(val).trim().replace(',', '.');
-          return parseFloat(str);
-        };
 
         const regionStores = cachedRegionJsonData[regionFileName];
         if (Array.isArray(regionStores)) {
@@ -3647,6 +4524,16 @@
       const products = window.currentStoreScraperProducts || [];
       if (products.length === 0) return [];
 
+      // Identifikasi tipe toko: Otomatis (Alfa/IDM) vs Manual (Alfamidi, Lawson, Supermarket Lokal)
+      const currentAccount = (document.getElementById('field_ACCOUNT')?.value || '').trim().toUpperCase();
+      const currentStoreName = (document.getElementById('field_NAMATOKO')?.value || '').trim().toUpperCase();
+      const isAutoStore = currentAccount.includes('ALFAMART') || 
+                          currentAccount.includes('INDOMARET') || 
+                          currentAccount === 'SAT' || 
+                          currentAccount === 'IDM' || 
+                          currentStoreName.includes('ALFAMART') || 
+                          currentStoreName.includes('INDOMARET');
+
       const rowsList = [];
 
       products.forEach((p) => {
@@ -3729,6 +4616,33 @@
         const cleanQtyOsa = (isOsaIsi && qtyOsa && parseFloat(qtyOsa) > 0) ? String(qtyOsa) : '';
         const cleanQtySoh = (isOsaIsi && qtySoh && parseFloat(qtySoh) > 0) ? String(qtySoh) : '';
 
+        const isExpAda = (exp1BulanStatus === 'ADA');
+        const cleanExpDate = isExpAda ? cleanPromoDate(expDateTerdekat) : '';
+        const cleanQtyExp = (isExpAda && qtyExpTerdekat && parseFloat(qtyExpTerdekat) > 0) ? String(qtyExpTerdekat) : '';
+
+        const isExpDisplayAda = (expDisplayStatus === 'ADA');
+        const qtyExpDispVal = getVal('field_QTY_EXP_DISPLAY');
+        const cleanExpDateDisplay = isExpDisplayAda ? cleanPromoDate(getVal('field_EXP_DATE_DISPLAY')) : '';
+        const cleanQtyExpDisplay = (isExpDisplayAda && qtyExpDispVal && parseFloat(qtyExpDispVal) > 0) ? String(qtyExpDispVal) : '';
+
+        const isPkmYa = (pkmStatus === 'YA');
+        const isSosAda = (sosStatus === 'ADA' || sosStatus === 'YA');
+
+        // FILTER PINTAR TOKO MANUAL: Lewati produk yang tidak disentuh jika toko bertipe manual (Alfamidi, Lawson, dll)
+        const isItemAudited = isOsaIsi ||
+                              isExpAda ||
+                              isExpDisplayAda ||
+                              isPkmYa ||
+                              isSosAda ||
+                              (cleanPromoPrice !== '') ||
+                              (parseFloat(cleanQtyOsa) > 0) ||
+                              (parseFloat(cleanQtySoh) > 0) ||
+                              isActiveProduct;
+
+        if (!isAutoStore && !isItemAudited) {
+          return; // Jangan masukkan ke baris Detail Audit
+        }
+
         row[10] = osaStatus; // 11: OSA (ISI / TIDAK)
         row[11] = cleanQtyOsa; // 12: QTY OSA (Murni BLANK "" jika OSA TIDAK atau 0)
         row[12] = cleanQtySoh; // 13: QTY SOH (Murni BLANK "" jika OSA TIDAK atau 0)
@@ -3741,25 +4655,15 @@
         row[17] = hasPromo ? cleanPromoDate(akhirPromo) : ''; // 18: AKHIR PROMO (DD/MM/YYYY)
         row[18] = ''; // 19: AKTIF PROMO (Murni BLANK "" agar tidak merusak rumus/format sheet)
 
-        const isExpAda = (exp1BulanStatus === 'ADA');
-        const cleanExpDate = isExpAda ? cleanPromoDate(expDateTerdekat) : '';
-        const cleanQtyExp = (isExpAda && qtyExpTerdekat && parseFloat(qtyExpTerdekat) > 0) ? String(qtyExpTerdekat) : '';
-
         row[19] = exp1BulanStatus; // 20: EXPIRED <1BULAN (ADA / TIDAK ADA)
         row[20] = cleanExpDate; // 21: EXP DATE TERDEKAT (Murni BLANK "" jika TIDAK ADA)
         row[21] = cleanQtyExp; // 22: QTY EXP TERDEKAT (Murni BLANK "" jika TIDAK ADA atau 0)
-
-        const isExpDisplayAda = (expDisplayStatus === 'ADA');
-        const qtyExpDispVal = getVal('field_QTY_EXP_DISPLAY');
-        const cleanExpDateDisplay = isExpDisplayAda ? cleanPromoDate(getVal('field_EXP_DATE_DISPLAY')) : '';
-        const cleanQtyExpDisplay = (isExpDisplayAda && qtyExpDispVal && parseFloat(qtyExpDispVal) > 0) ? String(qtyExpDispVal) : '';
 
         row[22] = expDisplayStatus; // 23: EXPIRED TERDISPLAY (ADA / TIDAK ADA)
         row[23] = cleanExpDateDisplay; // 24: EXP DATE DISPLAY (Murni BLANK "" jika TIDAK ADA)
         row[24] = cleanQtyExpDisplay; // 25: PRODUK EXPIRED TERDISPLAY (QTY) (Murni BLANK "" jika TIDAK ADA atau 0)
         row[25] = expDisplayStatus === 'ADA' ? getVal('field_FOTO_EXP_DISPLAY') : ''; // 26
 
-        const isPkmYa = (pkmStatus === 'YA');
         row[26] = isPkmYa ? 'YA' : ''; // 27: PKM (Murni BLANK "" jika tidak ada instruksi)
         row[27] = isPkmYa ? getVal('field_PKM') : ''; // 28
         row[28] = isPkmYa ? getVal('field_NPKM') : ''; // 29
@@ -3768,7 +4672,6 @@
         row[31] = isPkmYa ? getVal('field_STATUS_TAG') : ''; // 32
         row[32] = isPkmYa ? getVal('field_FOTO_PKM') : ''; // 33
 
-        const isSosAda = (sosStatus === 'ADA' || sosStatus === 'YA');
         row[33] = isSosAda ? 'ADA' : ''; // 34: AUDIT SOS (Murni BLANK "" jika tidak diaudit)
 
         // SOS 6 Categories (Cols 35-70)

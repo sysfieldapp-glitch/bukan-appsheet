@@ -1,0 +1,217 @@
+{
+  "20088719": {
+    "barcode": "8993200348312",
+    "nama_barang": "SOSIS ORIGINAL_SINGLES",
+    "katagori": "RTE"
+  },
+  "20088730": {
+    "barcode": "8993200346318",
+    "nama_barang": "SOSIS KEJU_SINGLES",
+    "katagori": "RTE"
+  },
+  "20106308": {
+    "barcode": "8993200345717",
+    "nama_barang": "SOSIS HOT_SINGLES",
+    "katagori": "RTE"
+  },
+  "20088731": {
+    "barcode": "8993200347315",
+    "nama_barang": "SOSIS MINI_SINGLES",
+    "katagori": "RTE"
+  },
+  "20126489": {
+    "barcode": "8993200668243",
+    "nama_barang": "SOSIS GOCHUJANG_SINGLES",
+    "katagori": "RTE"
+  },
+  "20141057": {
+    "barcode": "8993200000036",
+    "nama_barang": "SOSIS TOM YUM_SINGLES",
+    "katagori": "RTE"
+  },
+  "20118403": {
+    "barcode": "8993200668496",
+    "nama_barang": "BAKSO ORIGINAL_SINGLES",
+    "katagori": "RTE"
+  },
+  "20118404": {
+    "barcode": "8993200668502",
+    "nama_barang": "BAKSO KEJU_SINGLES",
+    "katagori": "RTE"
+  },
+  "20127239": {
+    "barcode": "8993200668984",
+    "nama_barang": "BAKSO HOT_SINGLES",
+    "katagori": "RTE"
+  },
+  "20137459": {
+    "barcode": "8993200668496",
+    "nama_barang": "BAKSO ORIGINAL_SINGLES",
+    "katagori": "RTE"
+  },
+  "20096951": {
+    "barcode": "8993200664382",
+    "nama_barang": "NUGGET ORIGINAL 450GR",
+    "katagori": "RTC"
+  },
+  "20096952": {
+    "barcode": "8993200664399",
+    "nama_barang": "NUGGET CRISPY 450GR",
+    "katagori": "RTC"
+  },
+  "20135063": {
+    "barcode": "8993200669134",
+    "nama_barang": "NUGGET CRISPY SPICY 450GR",
+    "katagori": "RTC"
+  },
+  "20131645": {
+    "barcode": "8993200668076",
+    "nama_barang": "NUGGET STICK CRISPY 450GR",
+    "katagori": "RTC"
+  },
+  "20036872": {
+    "barcode": "8993200664337",
+    "nama_barang": "FRANKFURTER COCKTAIL_SOSIS 500GR",
+    "katagori": "RTC"
+  },
+  "20130898": {
+    "barcode": "8993200667772",
+    "nama_barang": "COCKTAIL ORIGINAL_SOSIS 250GR",
+    "katagori": "RTC"
+  },
+  "20138916": {
+    "barcode": "8993200669769",
+    "nama_barang": "THAI TEA_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20115188": {
+    "barcode": "8993200666133",
+    "nama_barang": "CHOCOLATE_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20104637": {
+    "barcode": "8993200666218",
+    "nama_barang": "STRAWBERRY_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20104636": {
+    "barcode": "8993200666201",
+    "nama_barang": "MATCHA_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20099571": {
+    "barcode": "8993200666898",
+    "nama_barang": "CHOCO MALT_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20099572": {
+    "barcode": "8993200666836",
+    "nama_barang": "ALMOND_UHT 250ML",
+    "katagori": "UHT MILK"
+  },
+  "20140795": {
+    "barcode": "8993200670499",
+    "nama_barang": "CHOCOLATE_UHT NO SUGAR 225ML",
+    "katagori": "UHT MILK"
+  },
+  "20140793": {
+    "barcode": "8993200670529",
+    "nama_barang": "MATCHA_UHT NO SUGAR 225ML",
+    "katagori": "UHT MILK"
+  },
+  "20140794": {
+    "barcode": "8993200670536",
+    "nama_barang": "MARIE BISCUIT_UHT NO SUGAR 225ML",
+    "katagori": "UHT MILK"
+  },
+  "20102570": {
+    "barcode": "8993200666935",
+    "nama_barang": "ORIGINAL_SQUEEZE 120GR",
+    "katagori": "YOGURT"
+  },
+  "20102569": {
+    "barcode": "8993200666942",
+    "nama_barang": "STRAWBERRY_SQUEEZE 120GR",
+    "katagori": "YOGURT"
+  },
+  "20102567": {
+    "barcode": "8993200666959",
+    "nama_barang": "BLUEBERRRY_SQUEEZE 120GR",
+    "katagori": "YOGURT"
+  },
+  "20135336": {
+    "barcode": "8993200661343",
+    "nama_barang": "MANGO STICKY RICE_SQUEEZE 120GR",
+    "katagori": "YOGURT"
+  },
+  "20015231": {
+    "barcode": "8993200661305",
+    "nama_barang": "STRAWBERRY_CYD 240ML",
+    "katagori": "YOGURT"
+  },
+  "20028005": {
+    "barcode": "8993200661657",
+    "nama_barang": "BLUEBERRY_CYD 240ML",
+    "katagori": "YOGURT"
+  },
+  "20052812": {
+    "barcode": "8993200661350",
+    "nama_barang": "MIX FRUIT_CYD 240ML",
+    "katagori": "YOGURT"
+  },
+  "20103269": {
+    "barcode": "8993200664993",
+    "nama_barang": "STRAWBERRY_CYD ZERO 240 ML",
+    "katagori": "YOGURT"
+  },
+  "20135255": {
+    "barcode": "8993200669400",
+    "nama_barang": "STRAWBERRY_BITES 120GR",
+    "katagori": "YOGURT"
+  },
+  "20135254": {
+    "barcode": "8993200669417",
+    "nama_barang": "BLUEBERRY_BITES 120GR",
+    "katagori": "YOGURT"
+  },
+  "20141051": {
+    "barcode": "8993200670635",
+    "nama_barang": "MATCHA_EATMILK 80GR",
+    "katagori": "DESSERT"
+  },
+  "20138150": {
+    "barcode": "8993200669561",
+    "nama_barang": "CHOCOLATE_EATMILK 80GR",
+    "katagori": "DESSERT"
+  },
+  "20138151": {
+    "barcode": "8993200669592",
+    "nama_barang": "HAZELNUT_EATMILK 80GR",
+    "katagori": "DESSERT"
+  },
+  "20138147": {
+    "barcode": "8993200669592",
+    "nama_barang": "HAZELNUT_EATMILK 80GR",
+    "katagori": "DESSERT"
+  },
+  "20134040": {
+    "barcode": "8993200669363",
+    "nama_barang": "MANGO STICKY RICE_STICKPACK 40GR",
+    "katagori": "YOGURT"
+  },
+  "20129787": {
+    "barcode": "8993200668915",
+    "nama_barang": "STRAWBERRY_STICKPACK 40GR",
+    "katagori": "YOGURT"
+  },
+  "20131933": {
+    "barcode": "8993200668922",
+    "nama_barang": "BLUEBERRY_STICKPACK 40GR",
+    "katagori": "YOGURT"
+  },
+  "20133604": {
+    "barcode": "8993200668908",
+    "nama_barang": "ORIGINAL_STICKPACK 40GR",
+    "katagori": "YOGURT"
+  }
+}
