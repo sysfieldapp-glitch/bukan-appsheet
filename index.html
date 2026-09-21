@@ -209,9 +209,6 @@
             <button type="button" onclick="selectRetailPromoTab('FAMILY_MART')" id="retailTabBtn_FAMILY_MART" class="flex-1 min-w-[75px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
               🟡 FamMart
             </button>
-            <button type="button" onclick="selectRetailPromoTab('ALL')" id="retailTabBtn_ALL" class="flex-1 min-w-[60px] py-1.5 px-2 rounded-lg transition-all text-center text-slate-600 hover:text-slate-900">
-              🌐 Semua
-            </button>
           </div>
 
           <!-- QUICK COUNTER & SAVE BUTTON -->
@@ -1093,14 +1090,13 @@
       ALFAMIDI: 'Alfamidi',
       LAWSON: 'Lawson',
       CIRCLE_K: 'Circle K',
-      FAMILY_MART: 'Family Mart',
-      ALL: 'Semua Toko (Global)'
+      FAMILY_MART: 'Family Mart'
     };
 
     // SWITCH RETAIL SUB-TAB
     function selectRetailPromoTab(retailKey) {
       window.currentActiveRetailPromoTab = retailKey;
-      const allKeys = ['ALFAMART', 'INDOMARET', 'ALFAMIDI', 'LAWSON', 'CIRCLE_K', 'FAMILY_MART', 'ALL'];
+      const allKeys = ['ALFAMART', 'INDOMARET', 'ALFAMIDI', 'LAWSON', 'CIRCLE_K', 'FAMILY_MART'];
       
       allKeys.forEach(k => {
         const btn = document.getElementById('retailTabBtn_' + k);
@@ -1213,7 +1209,7 @@
       if (!container) return;
 
       const activeRetail = window.currentActiveRetailPromoTab || 'ALFAMART';
-      const isScraperRetail = activeRetail === 'ALFAMART' || activeRetail === 'INDOMARET';
+      const isScraperRetail = false; // Semua retail (Alfamart, Indomaret, Midi, dll) punya template harga & stok patokan
       const q = (document.getElementById('inputSearchPromoManager')?.value || '').trim().toLowerCase();
 
       const productsMap = window.masterProductsMap || {};
@@ -1580,37 +1576,40 @@
       }
 
       const map = {};
-      const targetAcc = (storeAccount || 'ALL').trim().toUpperCase();
+      const targetAcc = (storeAccount || '').trim().toUpperCase();
+      let resolvedTarget = 'ALFAMART';
+      if (targetAcc.includes('INDOMARET') || targetAcc.includes('IDM')) resolvedTarget = 'INDOMARET';
+      else if (targetAcc.includes('ALFAMIDI') || targetAcc.includes('MIDI')) resolvedTarget = 'ALFAMIDI';
+      else if (targetAcc.includes('LAWSON')) resolvedTarget = 'LAWSON';
+      else if (targetAcc.includes('CIRCLE') || targetAcc.includes('CK')) resolvedTarget = 'CIRCLE_K';
+      else if (targetAcc.includes('FAMILY') || targetAcc.includes('FAMMART')) resolvedTarget = 'FAMILY_MART';
+      else if (targetAcc.includes('ALFAMART') || targetAcc.includes('SAT')) resolvedTarget = 'ALFAMART';
+      else resolvedTarget = targetAcc;
 
       (window.masterPromoList || []).forEach(item => {
-        if (item.status === 'AKTIF' && item.barcode) {
-          const acc = (item.account || 'ALL').toUpperCase();
-          const isMatchAcc = acc === 'ALL' || 
-                             acc === targetAcc || 
-                             targetAcc.includes(acc) || 
-                             acc.includes(targetAcc);
-
-          // Cek apakah tanggal hari ini masuk di periode promo
-          const isDateActive = isDateWithinPromoRange(item.mulai_promo, item.akhir_promo);
+        if (item.barcode) {
+          const acc = (item.account || '').toUpperCase();
+          const isMatchAcc = acc === resolvedTarget; // 100% Ketat per-retail, tidak tercampur
 
           if (isMatchAcc) {
             const b = String(item.barcode).trim();
-            // Simpan promo yang paling spesifik (prioritaskan akun toko spesifik daripada ALL)
-            if (!map[b] || map[b].account === 'ALL') {
-              map[b] = {
-                harga_normal: Number(item.harga_normal || 0),
-                harga_promo: Number(item.harga_promo || 0),
-                jenis_promo: isDateActive ? (item.jenis_promo || 'DISKON (POTONGAN HARGA)') : '',
-                mulai_promo: item.mulai_promo || '',
-                akhir_promo: item.akhir_promo || '',
-                min_osa: Number(item.min_osa || 0),
-                max_osa: Number(item.max_osa || 0),
-                min_soh: Number(item.min_soh || 0),
-                max_soh: Number(item.max_soh || 0),
-                status: item.status || 'AKTIF',
-                account: acc
-              };
-            }
+            const isPromoActive = item.status === 'AKTIF' && isDateWithinPromoRange(item.mulai_promo, item.akhir_promo);
+            const hargaNormal = Number(item.harga_normal || 0);
+            const hargaPromo = Number(item.harga_promo || 0);
+
+            map[b] = {
+              harga_normal: hargaNormal,
+              harga_promo: isPromoActive ? hargaPromo : 0,
+              jenis_promo: (isPromoActive && (hargaPromo > 0 || item.jenis_promo)) ? (item.jenis_promo || 'DISKON (POTONGAN HARGA)') : '',
+              mulai_promo: isPromoActive ? (item.mulai_promo || '') : '',
+              akhir_promo: isPromoActive ? (item.akhir_promo || '') : '',
+              min_osa: Number(item.min_osa || 0),
+              max_osa: Number(item.max_osa || 0),
+              min_soh: Number(item.min_soh || 0),
+              max_soh: Number(item.max_soh || 0),
+              status: item.status || 'NONAKTIF',
+              account: acc
+            };
           }
         }
       });
@@ -2425,6 +2424,8 @@
                             fullCode.startsWith('T') || (code4Char.length === 4 && code4Char.startsWith('T'));
 
         let rawProducts = [];
+        let isIdmScraped = false;
+        let isSatScraped = false;
 
         if (isIndomaret) {
           // 1. INDOMARET: Cek cache Tampermonkey / LocalStorage
@@ -2437,6 +2438,7 @@
             }
             if (match && Array.isArray(match.products) && match.products.length > 0) {
               rawProducts = match.products;
+              isIdmScraped = true;
               console.log(`[Tab2 Scraper] Matched ${rawProducts.length} Indomaret items for store ${fullCode}`);
             }
           } catch (eIdm) { }
@@ -2470,6 +2472,7 @@
                 });
                 if (rawStore && Array.isArray(rawStore.products)) {
                   rawProducts = rawStore.products;
+                  isSatScraped = true;
                   console.log(`[Tab2 Scraper] Matched ${rawProducts.length} items for Alfamart store ${fullCode} (${code4Char}) in ${matchedRegionFile}`);
                 }
               }
@@ -2492,8 +2495,11 @@
           const isSat = storeAcc.includes('ALFAMART') || storeAcc.includes('SAT') || storeName.includes('ALFAMART') || fullCode.startsWith('1') || fullCode.startsWith('2') || fullCode.startsWith('3') || fullCode.startsWith('4');
           const isIdm = isIndomaret;
           const isManualStore = !isSat && !isIdm;
+          const isScraperSuccess = (isIdm && isIdmScraped) || (isSat && isSatScraped);
+          const applyPriceTemplate = isManualStore || !isScraperSuccess;
 
-          const promoMap = await fetchMasterPromoLive(storeAcc);
+          const targetPromoAcc = isIdm ? 'INDOMARET' : (isSat ? 'ALFAMART' : storeAcc);
+          const promoMap = await fetchMasterPromoLive(targetPromoAcc);
           if (promoMap && rawProducts.length > 0) {
             rawProducts.forEach(p => {
               const bCode = String(p.barcode || '').trim();
@@ -2505,12 +2511,15 @@
                 if (m.mulai_promo) p.mulai_promo = m.mulai_promo;
                 if (m.akhir_promo) p.akhir_promo = m.akhir_promo;
 
-                // Khusus Toko Manual (Alfamidi, Lawson, Circle K, Family Mart, dll):
-                if (isManualStore) {
+                // Terapkan Harga Normal Template: jika toko manual, scraper kosong, atau harga normal produk masih 0 (terlepas ada promo atau tidak)
+                if (applyPriceTemplate || !p.normal || Number(p.normal) === 0) {
                   if (m.harga_normal && Number(m.harga_normal) > 0) {
                     p.normal = m.harga_normal;
                   }
+                }
 
+                // Toko Manual atau Toko Scraper (IDM / ALFA) yang datanya belum ada di scraper:
+                if (applyPriceTemplate) {
                   // Auto-generate Stok OSA dari Range (Min - Max)
                   const maxOsa = Math.max(Number(m.min_osa || 0), Number(m.max_osa || 0));
                   const minOsa = Math.min(Number(m.min_osa || 0), Number(m.max_osa || 0));
